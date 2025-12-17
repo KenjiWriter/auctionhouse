@@ -1,12 +1,15 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
-import { Head, Link, router } from '@inertiajs/vue3';
+import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import { useI18n } from 'vue-i18n';
-import { ref, watch } from 'vue';
+import { ref, watch, computed } from 'vue';
 import debounce from 'lodash/debounce';
 import { route } from 'ziggy-js';
+import { AppPageProps } from '@/types';
 
 const { t } = useI18n();
+const page = usePage<AppPageProps>();
+const currentUser = computed(() => page.props.auth?.user);
 
 const props = defineProps<{
     auctions: {
@@ -16,7 +19,7 @@ const props = defineProps<{
             current_price: number;
             starting_price: number;
             category: { name: string };
-            user: { name: string };
+            user: { id: number; name: string };
             ends_at: string;
             status: string;
         }>;
@@ -24,6 +27,7 @@ const props = defineProps<{
     filters?: {
         search: string;
         category: string;
+        category_id?: string; // Sometimes filter might be category_id
     };
     categories?: Array<{ id: number; name: string }>;
     title?: string;
@@ -95,9 +99,18 @@ watch([search, category], debounce(() => {
                             <p class="text-xs text-muted-foreground">Current Bid</p>
                             <p class="text-xl font-bold text-primary">${{ auction.current_price || auction.starting_price }}</p>
                         </div>
-                        <div class="text-right">
-                             <p class="text-xs text-muted-foreground">Ends</p>
-                             <p class="text-sm font-medium">{{ new Date(auction.ends_at).toLocaleDateString() }}</p>
+                        <div class="text-right flex flex-col items-end gap-2">
+                             <div>
+                                 <p class="text-xs text-muted-foreground">Ends</p>
+                                 <p class="text-sm font-medium">{{ new Date(auction.ends_at).toLocaleDateString() }}</p>
+                             </div>
+                             <Link 
+                                v-if="currentUser && currentUser.id === auction.user.id && ['ended', 'ended_without_sale'].includes(auction.status)"
+                                :href="route('auctions.relist', auction.id)"
+                                class="text-xs px-2 py-1 bg-primary text-primary-foreground rounded hover:bg-primary/90"
+                             >
+                                Relist
+                             </Link>
                         </div>
                     </div>
                 </div>

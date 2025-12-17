@@ -1,6 +1,5 @@
-<script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
-import { Head, useForm, usePage } from '@inertiajs/vue3';
+import { Head, useForm, usePage, Link } from '@inertiajs/vue3';
 import { useI18n } from 'vue-i18n';
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import { route } from 'ziggy-js';
@@ -200,7 +199,14 @@ onUnmounted(() => {
                     <div class="space-y-4">
                          <!-- Bidding Form -->
                          <div v-if="userState === 'owner'" class="p-3 bg-yellow-50 text-yellow-800 rounded text-center text-sm">
-                             {{ t('validation.owner_cannot_bid') }}
+                             <p class="mb-2">{{ t('validation.owner_cannot_bid') }}</p>
+                             <Link 
+                                v-if="['ended', 'ended_without_sale'].includes(auction.status)"
+                                :href="route('auctions.relist', auction.id)"
+                                class="inline-block px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
+                             >
+                                 Relist Auction
+                             </Link>
                          </div>
                          <div v-else-if="auction.status !== 'active'" class="p-3 bg-gray-100 text-gray-600 rounded text-center text-sm">
                              {{ auction.status === 'upcoming' ? t('validation.auction_not_active') : t('validation.auction_ended') }}

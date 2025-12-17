@@ -181,4 +181,30 @@ class AuctionsController extends Controller
             'title' => 'My Wins',
         ]);
     }
+
+    public function relist(Request $request, Auction $auction)
+    {
+        if ($request->user()->id !== $auction->user_id) {
+            abort(403);
+        }
+
+        // Return Create view but with pre-filled data
+        // Note: Inertia::render('Auctions/Create', props) will allow us to default the form in Vue
+        // OR we can pass a separate prop `relistData`
+        
+        $relistData = [
+            'title' => $auction->title,
+            'description' => $auction->description,
+            'category_id' => $auction->category_id,
+            'starting_price' => $auction->starting_price,
+            'buy_now_price' => $auction->buy_now_price,
+            // Don't carry over dates or images for now (images safe handling is complex, user can re-upload or we can link if we want)
+            // Let's keep it simple: text data copy.
+        ];
+
+        return Inertia::render('Auctions/Create', [
+            'categories' => \App\Models\Category::all(),
+            'relistData' => $relistData, 
+        ]);
+    }
 }

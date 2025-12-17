@@ -8,15 +8,31 @@ const { t } = useI18n();
 
 const props = defineProps<{
     categories: Array<{ id: number; name: string }>;
+    relistData?: {
+        title: string;
+        category_id: number;
+        description: string;
+        starting_price: number;
+        buy_now_price: number | null;
+    };
 }>();
 
 const step = ref(1);
+
+const defaultValues = {
+    title: props.relistData?.title ?? '',
+    category_id: props.relistData?.category_id ?? '',
+    description: props.relistData?.description ?? '',
+    starting_price: props.relistData?.starting_price ?? '',
+    buy_now_price: props.relistData?.buy_now_price ?? '',
+};
+
 const form = useForm({
-    title: '',
-    category_id: '',
-    description: '',
-    starting_price: '',
-    buy_now_price: '',
+    title: String(defaultValues.title),
+    category_id: String(defaultValues.category_id),
+    description: String(defaultValues.description),
+    starting_price: String(defaultValues.starting_price),
+    buy_now_price: String(defaultValues.buy_now_price),
     starts_at: '',
     ends_at: '',
     images: [] as File[],
