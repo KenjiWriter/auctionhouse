@@ -22,7 +22,22 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'phone',
+        'address',
+        'city',
+        'postal_code',
+        'country',
     ];
+
+    public function auctions()
+    {
+        return $this->hasMany(Auction::class);
+    }
+
+    public function bids()
+    {
+        return $this->hasMany(Bid::class);
+    }
 
     /**
      * The attributes that should be hidden for serialization.
