@@ -6,6 +6,14 @@ use Illuminate\Database\Eloquent\Model;
 
 class Auction extends Model
 {
+    // Status Constants
+    public const STATUS_DRAFT = 'draft';
+    public const STATUS_UPCOMING = 'upcoming';
+    public const STATUS_ACTIVE = 'active';
+    public const STATUS_ENDED = 'ended';
+    public const STATUS_ENDED_WITHOUT_SALE = 'ended_without_sale';
+    public const STATUS_CANCELLED = 'cancelled';
+
     protected $fillable = [
         'user_id',
         'category_id',
@@ -51,5 +59,20 @@ class Auction extends Model
     public function winner()
     {
         return $this->belongsTo(User::class, 'winner_id');
+    }
+
+    public function scopeActive($query)
+    {
+        return $query->where('status', self::STATUS_ACTIVE);
+    }
+
+    public function scopeUpcoming($query)
+    {
+        return $query->where('status', self::STATUS_UPCOMING);
+    }
+
+    public function scopeEnded($query)
+    {
+        return $query->whereIn('status', [self::STATUS_ENDED, self::STATUS_ENDED_WITHOUT_SALE]);
     }
 }
