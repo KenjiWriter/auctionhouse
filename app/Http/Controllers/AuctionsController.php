@@ -128,13 +128,39 @@ class AuctionsController extends Controller
     {
         $auctions = Auction::with('category', 'user')
             ->withIsWatched()
-            ->whereIn('status', [Auction::STATUS_ACTIVE, Auction::STATUS_UPCOMING])
             ->when($request->search, function ($query, $search) {
                 $query->where('title', 'like', "%{$search}%")
                       ->orWhere('description', 'like', "%{$search}%");
             })
             ->when($request->category, function ($query, $category) {
                 $query->where('category_id', $category);
+            })
+            ->when($request->min_price, function ($query, $min) {
+                $query->where(function($q) use ($min) {
+                    $q->where('current_price', '>=', $min)
+                      ->orWhere(function($sub) use ($min) {
+                          $sub->whereNull('current_price')
+                              ->where('starting_price', '>=', $min);
+                      });
+                });
+            })
+            ->when($request->max_price, function ($query, $max) {
+                 $query->where(function($q) use ($max) {
+                    $q->where('current_price', '<=', $max)
+                      ->orWhere(function($sub) use ($max) {
+                          $sub->whereNull('current_price')
+                              ->where('starting_price', '<=', $max);
+                      });
+                });
+            })
+            ->when($request->buy_now === 'true', function ($query) {
+                $query->whereNotNull('buy_now_price');
+            })
+            ->when($request->status, function ($query, $status) {
+                // If status specific requested, allow it, otherwise default to active/upcoming
+                $query->where('status', $status);
+            }, function ($query) {
+                 $query->whereIn('status', [Auction::STATUS_ACTIVE, Auction::STATUS_UPCOMING]);
             })
             ->orderByRaw("FIELD(status, 'active', 'upcoming')") // Prioritize active
             ->orderBy('ends_at', 'asc') // Ending soonest first
@@ -143,7 +169,7 @@ class AuctionsController extends Controller
 
         return Inertia::render('Auctions/Index', [
             'auctions' => $auctions,
-            'filters' => $request->only(['search', 'category']),
+            'filters' => $request->only(['search', 'category', 'min_price', 'max_price', 'buy_now', 'status']),
             'categories' => \App\Models\Category::all(),
         ]);
     }

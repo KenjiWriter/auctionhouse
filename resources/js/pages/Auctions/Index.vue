@@ -29,6 +29,10 @@ const props = defineProps<{
         search: string;
         category: string;
         category_id?: string; // Sometimes filter might be category_id
+        min_price?: number;
+        max_price?: number;
+        buy_now?: string; // boolean as string 'true'/'false'
+        status?: string;
     };
     categories?: Array<{ id: number; name: string }>;
     title?: string;
@@ -36,10 +40,22 @@ const props = defineProps<{
 
 const search = ref(props.filters?.search || '');
 const category = ref(props.filters?.category || '');
+const minPrice = ref(props.filters?.min_price || '');
+const maxPrice = ref(props.filters?.max_price || '');
+const buyNow = ref(props.filters?.buy_now === 'true');
+const status = ref(props.filters?.status || '');
+const showFilters = ref(false);
 
-watch([search, category], debounce(() => {
-    router.get(route('auctions.index'), { search: search.value, category: category.value }, { preserveState: true, replace: true });
-}, 300));
+watch([search, category, minPrice, maxPrice, buyNow, status], debounce(() => {
+    router.get(route('auctions.index'), { 
+        search: search.value, 
+        category: category.value,
+        min_price: minPrice.value,
+        max_price: maxPrice.value,
+        buy_now: buyNow.value ? 'true' : null,
+        status: status.value
+    }, { preserveState: true, replace: true });
+}, 500));
 </script>
 
 <template>
@@ -53,19 +69,50 @@ watch([search, category], debounce(() => {
             </Link>
         </div>
 
-        <div v-if="filters" class="mb-6 flex gap-4">
-            <input 
-                v-model="search" 
-                type="text" 
-                placeholder="Search auctions..." 
-                class="flex-1 rounded-md border-border bg-background"
-            />
-            <select v-model="category" class="rounded-md border-border bg-background">
-                <option value="">All Categories</option>
-                <option v-for="cat in categories" :key="cat.id" :value="cat.id">
-                    {{ cat.name }}
-                </option>
-            </select>
+        <div v-if="filters" class="mb-6 space-y-4">
+            <div class="flex gap-4">
+                <input 
+                    v-model="search" 
+                    type="text" 
+                    placeholder="Search auctions..." 
+                    class="flex-1 rounded-md border-border bg-background"
+                />
+                <select v-model="category" class="rounded-md border-border bg-background w-1/3 md:w-auto">
+                    <option value="">All Categories</option>
+                    <option v-for="cat in categories" :key="cat.id" :value="cat.id">
+                        {{ cat.name }}
+                    </option>
+                </select>
+                <button @click="showFilters = !showFilters" class="px-3 py-2 border rounded-md hover:bg-muted" :class="{'bg-muted': showFilters}">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+                </button>
+            </div>
+
+            <!-- Advanced Filters -->
+             <div v-if="showFilters" class="p-4 bg-muted/50 rounded-md grid grid-cols-1 md:grid-cols-4 gap-4 transition-all duration-300">
+                <div>
+                     <label class="block text-xs font-medium mb-1">Price Range</label>
+                     <div class="flex gap-2">
+                         <input v-model="minPrice" type="number" placeholder="Min" class="w-full rounded-md border-border bg-background text-sm" />
+                         <input v-model="maxPrice" type="number" placeholder="Max" class="w-full rounded-md border-border bg-background text-sm" />
+                     </div>
+                </div>
+                <div>
+                     <label class="block text-xs font-medium mb-1">Status</label>
+                     <select v-model="status" class="w-full rounded-md border-border bg-background text-sm">
+                         <option value="">Active & Upcoming</option>
+                         <option value="active">Active Only</option>
+                         <option value="upcoming">Upcoming Only</option>
+                         <option value="ended">Ended</option>
+                     </select>
+                </div>
+                 <div class="flex items-center">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input v-model="buyNow" type="checkbox" class="rounded border-border text-primary focus:ring-primary" />
+                        <span class="text-sm">Buy Now Available</span>
+                    </label>
+                </div>
+             </div>
         </div>
 
         <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
