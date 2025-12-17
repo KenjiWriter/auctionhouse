@@ -40,6 +40,8 @@ const form = useForm({
 
 const imagePreviews = ref<string[]>([]);
 
+const draggedIndex = ref<number | null>(null);
+
 const handleImageUpload = (event: Event) => {
     const files = (event.target as HTMLInputElement).files;
     if (files) {
@@ -48,6 +50,26 @@ const handleImageUpload = (event: Event) => {
             imagePreviews.value.push(URL.createObjectURL(files[i]));
         }
     }
+};
+
+const onDragStart = (index: number) => {
+    draggedIndex.value = index;
+};
+
+const onDrop = (dropIndex: number) => {
+    if (draggedIndex.value === null || draggedIndex.value === dropIndex) return;
+
+    // Swap images in form.images
+    const tempFile = form.images[draggedIndex.value];
+    form.images.splice(draggedIndex.value, 1);
+    form.images.splice(dropIndex, 0, tempFile);
+
+    // Swap previews
+    const tempPreview = imagePreviews.value[draggedIndex.value];
+    imagePreviews.value.splice(draggedIndex.value, 1);
+    imagePreviews.value.splice(dropIndex, 0, tempPreview);
+
+    draggedIndex.value = null;
 };
 
 const nextStep = () => {
@@ -72,18 +94,57 @@ const submit = () => {
 
             <!-- Steps Indicator -->
             <div class="flex items-center justify-between mb-8 text-sm">
-                <span :class="{'text-primary font-bold': step >= 1, 'text-muted-foreground': step < 1}">1. Details</span>
+                <span :class="{'text-primary font-bold': step >= 1, 'text-muted-foreground': step < 1}">1. Images</span>
                 <div class="flex-1 h-px bg-border mx-2"></div>
-                <span :class="{'text-primary font-bold': step >= 2, 'text-muted-foreground': step < 2}">2. Pricing</span>
+                <span :class="{'text-primary font-bold': step >= 2, 'text-muted-foreground': step < 2}">2. Details</span>
                 <div class="flex-1 h-px bg-border mx-2"></div>
-                 <span :class="{'text-primary font-bold': step >= 3, 'text-muted-foreground': step < 3}">3. Images</span>
+                 <span :class="{'text-primary font-bold': step >= 3, 'text-muted-foreground': step < 3}">3. Pricing</span>
                  <div class="flex-1 h-px bg-border mx-2"></div>
                 <span :class="{'text-primary font-bold': step >= 4, 'text-muted-foreground': step < 4}">4. Review</span>
             </div>
 
             <form @submit.prevent="submit">
-                <!-- Step 1: Details -->
+                <!-- Step 1: Images -->
                 <div v-if="step === 1" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-foreground">Upload Images</label>
+                        <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-dashed border-gray-300 rounded-md dark:border-gray-600">
+                             <div class="space-y-1 text-center">
+                                <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
+                                    <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
+                                <div class="flex text-sm text-gray-600 dark:text-gray-400">
+                                    <label for="file-upload" class="relative cursor-pointer bg-white rounded-md font-medium text-primary hover:text-primary/90 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-primary dark:bg-gray-800">
+                                        <span>Upload a file</span>
+                                        <input id="file-upload" name="file-upload" type="file" class="sr-only" multiple @change="handleImageUpload">
+                                    </label>
+                                    <p class="pl-1">or drag and drop</p>
+                                </div>
+                                <p class="text-xs text-gray-500">PNG, JPG, GIF up to 2MB</p>
+                            </div>
+                        </div>
+                        <div class="mt-4 grid grid-cols-4 gap-4">
+                            <div 
+                                v-for="(preview, index) in imagePreviews" 
+                                :key="index" 
+                                class="relative aspect-square rounded overflow-hidden border cursor-move transition-all duration-200"
+                                :class="{'opacity-50 ring-2 ring-primary scale-95': draggedIndex === index}"
+                                draggable="true"
+                                @dragstart="onDragStart(index)"
+                                @dragover.prevent
+                                @drop="onDrop(index)"
+                            >
+                                <img :src="preview" class="object-cover w-full h-full pointer-events-none" />
+                                <button type="button" @click.prevent="form.images.splice(index, 1); imagePreviews.splice(index, 1)" class="absolute top-1 right-1 bg-black/50 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 hover:bg-red-500 transition-opacity">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 2: Details -->
+                <div v-if="step === 2" class="space-y-4">
                     <div>
                         <label class="block text-sm font-medium text-foreground">Title</label>
                         <input v-model="form.title" type="text" class="w-full mt-1 rounded-md border-border bg-background" required />
@@ -106,8 +167,8 @@ const submit = () => {
                     </div>
                 </div>
 
-                <!-- Step 2: Pricing -->
-                <div v-if="step === 2" class="space-y-4">
+                <!-- Step 3: Pricing -->
+                <div v-if="step === 3" class="space-y-4">
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-foreground">Starting Price</label>
@@ -130,33 +191,6 @@ const submit = () => {
                             <label class="block text-sm font-medium text-foreground">Ends At</label>
                             <input v-model="form.ends_at" type="datetime-local" class="w-full mt-1 rounded-md border-border bg-background" required />
                              <div v-if="form.errors.ends_at" class="text-red-500 text-xs">{{ form.errors.ends_at }}</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Step 3: Images -->
-                <div v-if="step === 3" class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-foreground">Upload Images</label>
-                        <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-dashed border-gray-300 rounded-md dark:border-gray-600">
-                             <div class="space-y-1 text-center">
-                                <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
-                                    <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                                </svg>
-                                <div class="flex text-sm text-gray-600 dark:text-gray-400">
-                                    <label for="file-upload" class="relative cursor-pointer bg-white rounded-md font-medium text-primary hover:text-primary/90 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-primary dark:bg-gray-800">
-                                        <span>Upload a file</span>
-                                        <input id="file-upload" name="file-upload" type="file" class="sr-only" multiple @change="handleImageUpload">
-                                    </label>
-                                    <p class="pl-1">or drag and drop</p>
-                                </div>
-                                <p class="text-xs text-gray-500">PNG, JPG, GIF up to 2MB</p>
-                            </div>
-                        </div>
-                        <div class="mt-4 grid grid-cols-4 gap-4">
-                            <div v-for="(preview, index) in imagePreviews" :key="index" class="relative aspect-square rounded overflow-hidden border">
-                                <img :src="preview" class="object-cover w-full h-full" />
-                            </div>
                         </div>
                     </div>
                 </div>

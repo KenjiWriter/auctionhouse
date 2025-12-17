@@ -1,16 +1,16 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
 import { useI18n } from 'vue-i18n';
-import { Home, Search, PlusCircle, MessageSquare, User } from 'lucide-vue-next';
+import { Home, Search, PlusCircle, MessageSquare, User, Eye } from 'lucide-vue-next';
 
 const { t } = useI18n();
 
 const navigation = [
-    { name: 'nav.home', href: route('home'), icon: Home },
-    { name: 'nav.search', href: '#', icon: Search },
-    { name: 'nav.add_auction', href: '#', icon: PlusCircle },
+    { name: 'nav.search', href: route('auctions.index'), icon: Search },
+    { name: 'nav.watched', href: '#', icon: Eye },
+    { name: 'nav.add', href: route('auctions.create'), icon: PlusCircle },
     { name: 'nav.chat', href: '#', icon: MessageSquare },
-    { name: 'nav.account', href: '#', icon: User },
+    { name: 'nav.account', href: route('dashboard'), icon: User },
 ];
 </script>
 
