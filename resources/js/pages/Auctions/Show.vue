@@ -1,3 +1,4 @@
+<script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, useForm, usePage, Link } from '@inertiajs/vue3';
 import { useI18n } from 'vue-i18n';
@@ -58,37 +59,36 @@ const toggleWatch = () => {
 
 // ...
 
-// Template changes
-// Inside <div class="flex justify-between items-start">
-// BEFORE <span class="text-sm ...">
-/*
-                        <div class="flex gap-2">
-                             <span class="text-sm font-semibold px-2 py-1 bg-secondary text-secondary-foreground rounded-full">
-                                {{ auction.category.name }}
-                            </span>
-                             <!-- Watch Button -->
-                            <button 
-                                v-if="currentUser"
-                                @click="toggleWatch"
-                                class="p-1 rounded-full hover:bg-muted transition-colors"
-                                :title="isWatched ? 'Remove from Watchlist' : 'Add to Watchlist'"
-                            >
-                                <svg v-if="isWatched" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-yellow-400 fill-current" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-                                </svg>
-                                 <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-                                </svg>
-                            </button>
-                        </div>
-*/
-                        <!-- Status Badge -->
-                        <div v-if="userState !== 'guest' && userState !== 'owner'" class="px-3 py-1 rounded-full text-sm font-bold"
-                             :class="{
-                                'bg-green-100 text-green-800': userState === 'leading',
-                                'bg-red-100 text-red-800': userState === 'losing',
-                                'bg-gray-100 text-gray-800': userState === 'not_participating'
-                <div>
+
+</script>
+
+<template>
+    <Head :title="auction.title" />
+
+    <AppLayout>
+        <div class="py-12">
+            <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 grid md:grid-cols-2 gap-8">
+                <!-- Left Column: Images -->
+                <div class="space-y-4">
+                     <div class="aspect-square bg-muted rounded-lg overflow-hidden relative shadow-sm">
+                         <img v-if="mainImage" :src="`/storage/${mainImage}`" class="w-full h-full object-cover" />
+                         <div v-else class="w-full h-full flex items-center justify-center text-muted-foreground">No Image</div>
+                     </div>
+                     <div class="grid grid-cols-4 gap-2">
+                        <button
+                            v-for="(img, index) in auction.images"
+                            :key="index"
+                            @click="mainImage = img.path"
+                            class="aspect-square rounded-md overflow-hidden border-2 transition-all"
+                            :class="mainImage === img.path ? 'border-primary' : 'border-transparent hover:border-muted-foreground/50'"
+                        >
+                            <img :src="`/storage/${img.path}`" class="w-full h-full object-cover" />
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Right Column -->
+                <div class="space-y-6">
                     <div class="flex justify-between items-start">
                         <div class="flex gap-2">
                              <span class="text-sm font-semibold px-2 py-1 bg-secondary text-secondary-foreground rounded-full">
@@ -213,6 +213,7 @@ const toggleWatch = () => {
                 </table>
             </div>
         </div>
+
     </AppLayout>
 </template>
 

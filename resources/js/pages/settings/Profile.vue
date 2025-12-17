@@ -3,6 +3,7 @@ import ProfileController from '@/actions/App/Http/Controllers/Settings/ProfileCo
 import { edit } from '@/routes/profile';
 import { send } from '@/routes/verification';
 import { Form, Head, Link, usePage } from '@inertiajs/vue3';
+import { useI18n } from 'vue-i18n';
 
 import DeleteUser from '@/components/DeleteUser.vue';
 import HeadingSmall from '@/components/HeadingSmall.vue';
@@ -30,6 +31,7 @@ const breadcrumbItems: BreadcrumbItem[] = [
 
 const page = usePage();
 const user = page.props.auth.user;
+const { t } = useI18n();
 </script>
 
 <template>
@@ -102,8 +104,9 @@ const user = page.props.auth.user;
                         <Button
                             :disabled="processing"
                             data-test="update-profile-button"
-                            {{ t('common.save') }}</Button
                         >
+                            {{ t('common.save') }}
+                        </Button>
 
                         <Transition
                             enter-active-class="transition ease-in-out"
