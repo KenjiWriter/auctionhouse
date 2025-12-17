@@ -1,0 +1,30 @@
+{
+    "common": {
+        "welcome": "Witamy",
+        "save": "Zapisz"
+    },
+    "nav": {
+        "home": "Strona główna",
+        "search": "Szukaj",
+        "add_auction": "Dodaj aukcję",
+        "my_auctions": "Moje Aukcje",
+        "my_wins": "Moje Wygrane",
+        "account": "Konto",
+        "chat": "Czat"
+    },
+    "auth": {
+        "login": "Zaloguj się",
+        "email": "Adres email",
+        "email_placeholder": "twoj@email.com",
+        "send_magic_link": "Wyślij magiczny link",
+        "complete_profile": "Uzupełnij profil",
+        "name": "Imię i nazwisko",
+        "password": "Hasło",
+        "password_confirmation": "Potwierdź hasło",
+        "phone": "Numer telefonu",
+        "address": "Adres",
+        "city": "Miasto",
+        "postal_code": "Kod pocztowy",
+        "country": "Kraj"
+    }
+}

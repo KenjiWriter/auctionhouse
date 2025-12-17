@@ -1,0 +1,30 @@
+{
+    "common": {
+        "welcome": "Welcome",
+        "save": "Save"
+    },
+    "nav": {
+        "home": "Home",
+        "search": "Search",
+        "add_auction": "Add Auction",
+        "my_auctions": "My Auctions",
+        "my_wins": "My Wins",
+        "account": "Account",
+        "chat": "Chat"
+    },
+    "auth": {
+        "login": "Log in",
+        "email": "Email address",
+        "email_placeholder": "your@email.com",
+        "send_magic_link": "Send Magic Link",
+        "complete_profile": "Complete Profile",
+        "name": "Full Name",
+        "password": "Password",
+        "password_confirmation": "Confirm Password",
+        "phone": "Phone Number",
+        "address": "Address",
+        "city": "City",
+        "postal_code": "Postal Code",
+        "country": "Country"
+    }
+}
