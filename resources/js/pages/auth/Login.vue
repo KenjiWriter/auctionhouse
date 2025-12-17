@@ -1,110 +1,66 @@
 <script setup lang="ts">
-import InputError from '@/components/InputError.vue';
-import TextLink from '@/components/TextLink.vue';
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Spinner } from '@/components/ui/spinner';
-import AuthBase from '@/layouts/AuthLayout.vue';
-import { register } from '@/routes';
-import { store } from '@/routes/login';
-import { request } from '@/routes/password';
-import { Form, Head } from '@inertiajs/vue3';
+import { useForm, Head } from '@inertiajs/vue3';
+import { ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 
-defineProps<{
-    status?: string;
-    canResetPassword: boolean;
-    canRegister: boolean;
-}>();
+const { t } = useI18n();
+
+const form = useForm({
+    email: '',
+});
+
+const status = ref<string | null>(null);
+
+const submit = () => {
+    form.post('/login/magic', {
+        onSuccess: () => {
+             status.value = 'We have emailed you a magic link!';
+             form.reset();
+        },
+    });
+};
 </script>
 
 <template>
-    <AuthBase
-        title="Log in to your account"
-        description="Enter your email and password below to log in"
-    >
-        <Head title="Log in" />
+    <Head :title="t('auth.login')" />
+    <div class="flex min-h-screen flex-col items-center justify-center bg-gray-100 p-6 dark:bg-gray-900">
+        <div class="w-full max-w-md overflow-hidden bg-white p-8 shadow-md rounded-lg dark:bg-gray-800">
+            <h2 class="mb-6 text-2xl font-bold text-center text-gray-900 dark:text-white">
+                {{ t('auth.login') }}
+            </h2>
 
-        <div
-            v-if="status"
-            class="mb-4 text-center text-sm font-medium text-green-600"
-        >
-            {{ status }}
-        </div>
+            <div v-if="status" class="mb-4 text-sm font-medium text-green-600 dark:text-green-400">
+                {{ status }}
+            </div>
 
-        <Form
-            v-bind="store.form()"
-            :reset-on-success="['password']"
-            v-slot="{ errors, processing }"
-            class="flex flex-col gap-6"
-        >
-            <div class="grid gap-6">
-                <div class="grid gap-2">
-                    <Label for="email">Email address</Label>
-                    <Input
+            <form @submit.prevent="submit">
+                <div class="mb-4">
+                    <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        {{ t('auth.email') }}
+                    </label>
+                    <input
                         id="email"
+                        v-model="form.email"
                         type="email"
-                        name="email"
                         required
-                        autofocus
-                        :tabindex="1"
-                        autocomplete="email"
-                        placeholder="email@example.com"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                        :placeholder="t('auth.email_placeholder')"
                     />
-                    <InputError :message="errors.email" />
-                </div>
-
-                <div class="grid gap-2">
-                    <div class="flex items-center justify-between">
-                        <Label for="password">Password</Label>
-                        <TextLink
-                            v-if="canResetPassword"
-                            :href="request()"
-                            class="text-sm"
-                            :tabindex="5"
-                        >
-                            Forgot password?
-                        </TextLink>
+                    <div v-if="form.errors.email" class="mt-1 text-sm text-red-600">
+                        {{ form.errors.email }}
                     </div>
-                    <Input
-                        id="password"
-                        type="password"
-                        name="password"
-                        required
-                        :tabindex="2"
-                        autocomplete="current-password"
-                        placeholder="Password"
-                    />
-                    <InputError :message="errors.password" />
                 </div>
 
-                <div class="flex items-center justify-between">
-                    <Label for="remember" class="flex items-center space-x-3">
-                        <Checkbox id="remember" name="remember" :tabindex="3" />
-                        <span>Remember me</span>
-                    </Label>
+                <div class="flex items-center justify-end">
+                    <button
+                        type="submit"
+                        :disabled="form.processing"
+                        class="px-4 py-2 text-white bg-primary rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50"
+                    >
+                        {{ t('auth.send_magic_link') }}
+                    </button>
                 </div>
-
-                <Button
-                    type="submit"
-                    class="mt-4 w-full"
-                    :tabindex="4"
-                    :disabled="processing"
-                    data-test="login-button"
-                >
-                    <Spinner v-if="processing" />
-                    Log in
-                </Button>
-            </div>
-
-            <div
-                class="text-center text-sm text-muted-foreground"
-                v-if="canRegister"
-            >
-                Don't have an account?
-                <TextLink :href="register()" :tabindex="5">Sign up</TextLink>
-            </div>
-        </Form>
-    </AuthBase>
+            </form>
+        </div>
+    </div>
 </template>
