@@ -22,6 +22,8 @@ Route::middleware('auth')->group(function () {
     
     Route::get('my-auctions', [\App\Http\Controllers\AuctionsController::class, 'myAuctions'])->name('auctions.mine');
     Route::get('my-wins', [\App\Http\Controllers\AuctionsController::class, 'myWins'])->name('auctions.wins');
+    Route::get('my-watchlist', [\App\Http\Controllers\AuctionsController::class, 'watched'])->name('auctions.watched');
+    Route::post('auctions/{auction}/watch', [\App\Http\Controllers\AuctionsController::class, 'toggleWatch'])->name('auctions.watch');
     Route::get('auctions/{auction}/relist', [\App\Http\Controllers\AuctionsController::class, 'relist'])->name('auctions.relist');
     Route::resource('auctions', \App\Http\Controllers\AuctionsController::class);
     Route::post('auctions/{auction}/bid', [\App\Http\Controllers\AuctionsController::class, 'bid'])->name('auctions.bid');

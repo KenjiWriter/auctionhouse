@@ -75,4 +75,20 @@ class Auction extends Model
     {
         return $query->whereIn('status', [self::STATUS_ENDED, self::STATUS_ENDED_WITHOUT_SALE]);
     }
+
+    public function watchers()
+    {
+        return $this->belongsToMany(User::class, 'auction_user')->withTimestamps();
+    }
+
+    public function scopeWithIsWatched($query)
+    {
+        $user = request()->user();
+        if ($user) {
+            return $query->withExists(['watchers as is_watched' => function ($q) use ($user) {
+                $q->where('user_id', $user->id);
+            }]);
+        }
+        return $query;
+    }
 }

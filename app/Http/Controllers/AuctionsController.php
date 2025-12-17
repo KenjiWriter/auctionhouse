@@ -127,6 +127,7 @@ class AuctionsController extends Controller
     public function index(Request $request)
     {
         $auctions = Auction::with('category', 'user')
+            ->withIsWatched()
             ->whereIn('status', [Auction::STATUS_ACTIVE, Auction::STATUS_UPCOMING])
             ->when($request->search, function ($query, $search) {
                 $query->where('title', 'like', "%{$search}%")
@@ -150,6 +151,13 @@ class AuctionsController extends Controller
     public function show(Auction $auction)
     {
         $auction->load(['category', 'user', 'images', 'bids.user']);
+        
+        // Load is_watched for single auction
+        if (request()->user()) {
+            $auction->loadExists(['watchers as is_watched' => function ($q) {
+                $q->where('user_id', request()->user()->id);
+            }]);
+        }
 
         return Inertia::render('Auctions/Show', [
             'auction' => $auction,
@@ -160,6 +168,7 @@ class AuctionsController extends Controller
     {
         $auctions = $request->user()->auctions()
             ->with('category', 'user')
+            ->withIsWatched()
             ->latest()
             ->paginate(10);
 
@@ -173,6 +182,7 @@ class AuctionsController extends Controller
     {
         $auctions = Auction::where('winner_id', $request->user()->id)
             ->with('category', 'user')
+            ->withIsWatched()
             ->latest()
             ->paginate(10);
 
@@ -205,6 +215,28 @@ class AuctionsController extends Controller
         return Inertia::render('Auctions/Create', [
             'categories' => \App\Models\Category::all(),
             'relistData' => $relistData, 
+        ]);
+    }
+
+    public function toggleWatch(Request $request, Auction $auction)
+    {
+        $user = $request->user();
+        $user->watchedAuctions()->toggle($auction->id);
+
+        return back()->with('success', $user->watchedAuctions()->where('auction_id', $auction->id)->exists() ? 'Added to watchlist' : 'Removed from watchlist');
+    }
+
+    public function watched(Request $request)
+    {
+        $auctions = $request->user()->watchedAuctions()
+            ->with(['category', 'user'])
+            ->withIsWatched() // Should be true for all, but consistent
+            ->latest()
+            ->paginate(10); // Or whatever pagination size
+
+        return Inertia::render('Auctions/Index', [
+            'auctions' => $auctions,
+            'title' => 'Watchlist',
         ]);
     }
 }
