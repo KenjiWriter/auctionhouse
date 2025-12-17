@@ -12,6 +12,23 @@
         "account": "Konto",
         "chat": "Czat"
     },
+    "validation": {
+        "auction_not_active": "Ta aukcja nie jest aktywna.",
+        "auction_ended": "Ta aukcja się zakończyła.",
+        "owner_cannot_bid": "Nie możesz licytować własnej aukcji.",
+        "bid_too_low": "Oferta musi być wyższa niż ${min}.",
+        "bid_too_low_start": "Oferta musi wynosić co najmniej ${min}."
+    },
+    "auction": {
+        "bid_success": "Oferta złożona pomyślnie!",
+        "outbid": "Ktoś Cię przebił!",
+        "status": {
+            "leading": "Wygrywasz",
+            "losing": "Przegrywasz",
+            "not_participating": "Nie bierzesz udziału",
+            "won": "Wygrałeś"
+        }
+    },
     "auth": {
         "login": "Zaloguj się",
         "email": "Adres email",

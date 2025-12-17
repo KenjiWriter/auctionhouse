@@ -12,6 +12,23 @@
         "account": "Account",
         "chat": "Chat"
     },
+    "validation": {
+        "auction_not_active": "This auction is not active.",
+        "auction_ended": "This auction has ended.",
+        "owner_cannot_bid": "You cannot bid on your own auction.",
+        "bid_too_low": "Bid must be higher than ${min}.",
+        "bid_too_low_start": "Bid must be at least ${min}."
+    },
+    "auction": {
+        "bid_success": "Bid placed successfully!",
+        "outbid": "You have been outbid!",
+        "status": {
+            "leading": "Winning",
+            "losing": "Outbid",
+            "not_participating": "Not Participating",
+            "won": "Won"
+        }
+    },
     "auth": {
         "login": "Log in",
         "email": "Email address",

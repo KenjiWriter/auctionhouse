@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
-import { Head, useForm } from '@inertiajs/vue3';
+import { Head, useForm, usePage } from '@inertiajs/vue3';
 import { useI18n } from 'vue-i18n';
-import { ref } from 'vue';
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
+import { route } from 'ziggy-js';
 
 const { t } = useI18n();
+const page = usePage();
+const currentUser = computed(() => page.props.auth.user);
 
 const props = defineProps<{
     auction: {
@@ -14,46 +17,116 @@ const props = defineProps<{
         current_price: number;
         starting_price: number;
         category: { name: string };
-        user: { name: string };
+        user: { id: number; name: string };
+        user_id: number;
         ends_at: string;
+        status: string;
         images: Array<{ path: string }>;
-        bids: Array<{ id: number; amount: number; user: { name: string } }>;
+        bids: Array<{ id: number; amount: number; user: { id: number; name: string }; user_id: number; created_at: string }>;
     };
 }>();
 
 const mainImage = ref(props.auction.images[0]?.path || null);
-const bidAmount = ref('');
+const bidAmount = ref<number | ''>('');
+const isOutbid = ref(false);
+const showToast = ref(false);
+const toastMessage = ref('');
+
+const currentPrice = ref(Number(props.auction.current_price || props.auction.starting_price));
+const bids = ref([...props.auction.bids]);
+
+// Compute User State
+const userState = computed(() => {
+    if (!currentUser.value) return 'guest';
+    if (props.auction.user_id === currentUser.value.id) return 'owner';
+
+    const myLastBid = bids.value.find(b => b.user.id === currentUser.value.id);
+    if (!myLastBid) return 'not_participating';
+
+    const highestBid = bids.value[0];
+    if (highestBid && highestBid.user.id === currentUser.value.id) return 'leading';
+
+    return 'losing';
+});
+
+const canBid = computed(() => {
+    if (props.auction.status !== 'active') return false;
+    if (userState.value === 'owner') return false;
+    const min = currentPrice.value;
+    // Simple check: client side validation help, backend is source of truth
+    return true; 
+});
+
+const minBidAmount = computed(() => {
+    return currentPrice.value + 0.01; // minimal increment example
+});
+
 const form = useForm({
     amount: '',
 });
 
 const submitBid = () => {
-    form.amount = bidAmount.value;
+    if (!bidAmount.value) return;
+    
+    form.amount = bidAmount.value.toString();
     form.post(route('auctions.bid', props.auction.id), {
-        onSuccess: () => bidAmount.value = '',
+        onSuccess: () => {
+             bidAmount.value = '';
+             displayToast(t('auction.bid_success'), 'success');
+        },
+        onError: () => {
+             // Inertia handles errors automatically in form.errors
+        },
         preserveScroll: true,
     });
 };
 
-// Real-time updates
-import { onMounted, onUnmounted } from 'vue';
+const displayToast = (msg: string, type: 'success' | 'error' | 'info' = 'info') => {
+    toastMessage.value = msg;
+    showToast.value = true;
+    setTimeout(() => showToast.value = false, 3000);
+};
 
+// Real-time updates
 onMounted(() => {
+    // Listen for Public Updates
     // @ts-ignore
     window.Echo.channel(`auctions.${props.auction.id}`)
         .listen('BidPlaced', (e: any) => {
-            props.auction.current_price = e.bid.amount;
-            props.auction.bids.unshift({
+            currentPrice.value = Number(e.bid.amount);
+            bids.value.unshift({
                 id: e.bid.id,
                 amount: e.bid.amount,
                 user: e.bid.user,
+                user_id: e.bid.user_id,
+                created_at: e.bid.created_at
             });
+            
+            // Pulse animation trigger could go here
         });
+
+    // Listen for Private Outbid events
+    if (currentUser.value) {
+        // @ts-ignore
+        window.Echo.private(`App.Models.User.${currentUser.value.id}`)
+            .listen('Outbid', (e: any) => {
+                if (e.auctionId === props.auction.id) {
+                    isOutbid.value = true;
+                    displayToast(t('auction.outbid'), 'error');
+                    if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+                    setTimeout(() => isOutbid.value = false, 2000);
+                }
+            });
+    }
 });
 
 onUnmounted(() => {
     // @ts-ignore
     window.Echo.leave(`auctions.${props.auction.id}`);
+    if (currentUser.value) {
+        // @ts-ignore
+        window.Echo.leave(`App.Models.User.${currentUser.value.id}`);
+    }
 });
 </script>
 
@@ -61,6 +134,12 @@ onUnmounted(() => {
     <Head :title="auction.title" />
 
     <AppLayout>
+        <!-- Toast Notification -->
+        <div v-if="showToast" class="fixed top-20 right-4 z-50 px-4 py-2 rounded shadow-lg text-white transition-opacity duration-300"
+             :class="toastMessage === t('auction.outbid') ? 'bg-red-600' : 'bg-green-600'">
+            {{ toastMessage }}
+        </div>
+
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
             <!-- Images -->
             <div class="space-y-4">
@@ -85,43 +164,66 @@ onUnmounted(() => {
             <!-- Details -->
             <div class="space-y-6">
                 <div>
-                     <span class="text-sm font-semibold px-2 py-1 bg-secondary text-secondary-foreground rounded-full">
-                        {{ auction.category.name }}
-                    </span>
+                    <div class="flex justify-between items-start">
+                         <span class="text-sm font-semibold px-2 py-1 bg-secondary text-secondary-foreground rounded-full">
+                            {{ auction.category.name }}
+                        </span>
+                        <!-- Status Badge -->
+                        <div v-if="userState !== 'guest' && userState !== 'owner'" class="px-3 py-1 rounded-full text-sm font-bold"
+                             :class="{
+                                'bg-green-100 text-green-800': userState === 'leading',
+                                'bg-red-100 text-red-800': userState === 'losing',
+                                'bg-gray-100 text-gray-800': userState === 'not_participating'
+                             }">
+                             {{ t(`auction.status.${userState}`) }}
+                        </div>
+                    </div>
                     <h1 class="mt-2 text-3xl font-bold text-foreground">{{ auction.title }}</h1>
                     <p class="text-muted-foreground">by {{ auction.user.name }}</p>
                 </div>
 
-                <div class="bg-card border rounded-lg p-6 shadow-sm">
+                <div class="bg-card border rounded-lg p-6 shadow-sm transition-colors duration-500"
+                     :class="{'bg-red-50 border-red-200 dark:bg-red-900/20': isOutbid}">
                     <div class="flex justify-between items-center mb-4">
                         <div>
                             <p class="text-sm text-muted-foreground">Current Price</p>
-                            <p class="text-3xl font-bold text-primary">${{ auction.current_price || auction.starting_price }}</p>
+                            <p class="text-3xl font-bold text-primary transition-all duration-300" :class="{'scale-110 text-red-600': isOutbid}">
+                                ${{ currentPrice.toFixed(2) }}
+                            </p>
                         </div>
                         <div class="text-right">
-                            <p class="text-sm text-muted-foreground">Time Left</p>
-                            <p class="text-xl font-bold">2h 15m 30s</p> <!-- Mock timer -->
+                            <p class="text-sm text-muted-foreground">Ends In</p>
+                            <p class="text-xl font-bold">{{ new Date(auction.ends_at).toLocaleDateString() }}</p> 
                         </div>
                     </div>
 
                     <div class="space-y-4">
                          <!-- Bidding Form -->
-                         <form @submit.prevent="submitBid" class="flex gap-2">
+                         <div v-if="userState === 'owner'" class="p-3 bg-yellow-50 text-yellow-800 rounded text-center text-sm">
+                             {{ t('validation.owner_cannot_bid') }}
+                         </div>
+                         <div v-else-if="auction.status !== 'active'" class="p-3 bg-gray-100 text-gray-600 rounded text-center text-sm">
+                             {{ auction.status === 'upcoming' ? t('validation.auction_not_active') : t('validation.auction_ended') }}
+                         </div>
+                         <form v-else @submit.prevent="submitBid" class="flex gap-2">
                              <input 
                                 v-model="bidAmount" 
                                 type="number" 
                                 step="0.01" 
+                                :min="minBidAmount"
                                 class="flex-1 rounded-md border-border bg-background" 
-                                placeholder="Enter amount" 
+                                :placeholder="t('auction.bid_too_low_start', { min: minBidAmount.toFixed(2) })"
                                 required
+                                :disabled="form.processing"
                              />
                              <button 
                                 type="submit" 
-                                :disabled="form.processing"
-                                class="px-6 py-2 bg-primary text-primary-foreground rounded-md font-bold hover:bg-primary/90 disabled:opacity-50"
+                                :disabled="form.processing || !bidAmount || bidAmount <= currentPrice"
+                                class="px-6 py-2 bg-primary text-primary-foreground rounded-md font-bold hover:bg-primary/90 disabled:opacity-50 flex items-center gap-2"
                             >
+                                 <span v-if="form.processing" class="animate-spin">⏳</span>
                                  Bid
-                             </button>
+                            </button>
                          </form>
                          <div v-if="form.errors.amount" class="text-red-500 text-sm">{{ form.errors.amount }}</div>
                     </div>
@@ -146,18 +248,34 @@ onUnmounted(() => {
                             <th class="px-4 py-3 font-medium text-right">Time</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y">
-                        <tr v-for="bid in auction.bids" :key="bid.id" class="hover:bg-muted/50">
-                            <td class="px-4 py-3 font-medium">{{ bid.user.name }}</td>
-                            <td class="px-4 py-3">${{ bid.amount }}</td>
-                            <td class="px-4 py-3 text-right">ago</td>
+                    <transition-group name="list" tag="tbody" class="divide-y relative">
+                        <tr v-for="bid in bids" :key="bid.id" class="hover:bg-muted/50 transition-all duration-500">
+                            <td class="px-4 py-3 font-medium">
+                                {{ bid.user.name }}
+                                <span v-if="currentUser && bid.user.id === currentUser.id" class="ml-1 text-xs text-primary font-bold">(You)</span>
+                            </td>
+                            <td class="px-4 py-3 font-bold">${{ Number(bid.amount).toFixed(2) }}</td>
+                            <td class="px-4 py-3 text-right text-muted-foreground">{{ new Date(bid.created_at).toLocaleTimeString() }}</td>
                         </tr>
-                         <tr v-if="auction.bids.length === 0">
+                         <tr v-if="bids.length === 0" key="empty">
                             <td colspan="3" class="px-4 py-6 text-center text-muted-foreground">No bids yet. be the first!</td>
                         </tr>
-                    </tbody>
+                    </transition-group>
                 </table>
             </div>
         </div>
     </AppLayout>
 </template>
+
+<style scoped>
+.list-enter-active,
+.list-leave-active {
+  transition: all 0.5s ease;
+}
+.list-enter-from,
+.list-leave-to {
+  opacity: 0;
+  transform: translateX(-30px);
+  background-color: rgba(var(--primary), 0.1);
+}
+</style>

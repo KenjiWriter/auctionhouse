@@ -18,6 +18,7 @@ const props = defineProps<{
             category: { name: string };
             user: { name: string };
             ends_at: string;
+            status: string;
         }>;
     };
     filters?: {
@@ -73,7 +74,16 @@ watch([search, category], debounce(() => {
                         <span class="text-xs font-semibold px-2 py-1 bg-secondary text-secondary-foreground rounded-full">
                             {{ auction.category.name }}
                         </span>
-                         <span class="text-xs text-muted-foreground">
+                        <span v-if="auction.status === 'upcoming'" class="text-xs font-semibold px-2 py-1 bg-blue-100 text-blue-800 rounded-full ml-2">
+                            Upcoming
+                        </span>
+                         <span v-else-if="auction.status === 'ended'" class="text-xs font-semibold px-2 py-1 bg-green-100 text-green-800 rounded-full ml-2">
+                            Sold
+                        </span>
+                        <span v-else-if="auction.status === 'ended_without_sale'" class="text-xs font-semibold px-2 py-1 bg-gray-100 text-gray-800 rounded-full ml-2">
+                            Ended (No Sale)
+                        </span>
+                         <span class="text-xs text-muted-foreground ml-auto">
                              by {{ auction.user.name }}
                          </span>
                     </div>
