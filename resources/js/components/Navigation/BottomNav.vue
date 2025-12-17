@@ -9,7 +9,7 @@ const navigation = [
     { name: 'nav.search', href: route('auctions.index'), icon: Search },
     { name: 'nav.watched', href: route('auctions.watched'), icon: Eye },
     { name: 'nav.add', href: route('auctions.create'), icon: PlusCircle },
-    { name: 'nav.chat', href: '#', icon: MessageSquare },
+    { name: 'nav.chat', href: route('conversations.index'), icon: MessageSquare },
     { name: 'nav.account', href: route('dashboard'), icon: User },
 ];
 </script>

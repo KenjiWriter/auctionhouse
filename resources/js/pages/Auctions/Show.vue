@@ -27,7 +27,7 @@ const props = defineProps<{
 }>();
 
 const mainImage = ref(props.auction.images[0]?.path || null);
-const bidAmount = ref<number | string>('');
+const bidAmount = ref('' as number | string);
 const isOutbid = ref(false);
 const showToast = ref(false);
 const toastMessage = ref('');

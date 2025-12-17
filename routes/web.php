@@ -27,6 +27,12 @@ Route::middleware('auth')->group(function () {
     Route::get('auctions/{auction}/relist', [\App\Http\Controllers\AuctionsController::class, 'relist'])->name('auctions.relist');
     Route::resource('auctions', \App\Http\Controllers\AuctionsController::class);
     Route::post('auctions/{auction}/bid', [\App\Http\Controllers\AuctionsController::class, 'bid'])->name('auctions.bid');
+    
+    // Chat
+    Route::get('conversations', [\App\Http\Controllers\ConversationController::class, 'index'])->name('conversations.index');
+    Route::post('conversations', [\App\Http\Controllers\ConversationController::class, 'store'])->name('conversations.store');
+    Route::get('conversations/{conversation}', [\App\Http\Controllers\ConversationController::class, 'show'])->name('conversations.show');
+    Route::post('conversations/{conversation}/messages', [\App\Http\Controllers\ConversationController::class, 'sendMessage'])->name('conversations.message');
 });
 
 Route::get('dashboard', function () {
