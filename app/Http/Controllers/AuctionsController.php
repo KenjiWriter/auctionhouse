@@ -41,41 +41,93 @@ class AuctionsController extends Controller
             }
         }
         
-        $auction->update(['status' => 'active']); // Or draft depending on logic
+        // Determine initial status
+        $status = Auction::STATUS_ACTIVE;
+        if ($auction->starts_at && $auction->starts_at->isFuture()) {
+            $status = Auction::STATUS_UPCOMING;
+        }
+        
+        $auction->update(['status' => $status]);
 
         return redirect()->route('auctions.index')->with('success', 'Auction created successfully.');
     }
 
-    public function bid(Request $request, Auction $auction)
+    public function bid(Request $request, int $auctionId)
     {
-        $validated = $request->validate([
-            'amount' => 'required|numeric|gt:' . ($auction->current_price ?: $auction->starting_price),
-        ]);
+        $user = $request->user();
+        
+        // 1. Transaction & Lock
+        try {
+            \Illuminate\Support\Facades\DB::transaction(function () use ($request, $auctionId, $user) {
+                // Lock the auction row for update to prevent race conditions
+                $auction = Auction::lockForUpdate()->findOrFail($auctionId);
 
-        if ($auction->user_id === $request->user()->id) {
-            return back()->withErrors(['amount' => 'You cannot bid on your own auction.']);
+                // 2. Validate Auction Status
+                if ($auction->status !== Auction::STATUS_ACTIVE) {
+                    throw new \Exception(__('validation.auction_not_active'));
+                }
+
+                if ($auction->ends_at && $auction->ends_at->isPast()) {
+                     throw new \Exception(__('validation.auction_ended'));
+                }
+
+                // 3. Validate User (Owner Check)
+                if ($auction->user_id === $user->id) {
+                     throw new \Exception(__('validation.owner_cannot_bid'));
+                }
+
+                // 4. Validate Bid Amount
+                $minBid = ($auction->current_price ?: $auction->starting_price);
+                // Optional: enforce step. For now just > current. 
+                // However, strictly speaking, if current_price is set, new bid must be > current.
+                // If it's the FIRST bid, it must be >= starting_price.
+                // Let's refine:
+                // If bids exist, must be > current_price.
+                // If no bids, must be >= starting_price.
+                
+                $currentHighest = $auction->current_price;
+                $amount = $request->input('amount');
+
+                if ($currentHighest) {
+                    if ($amount <= $currentHighest) {
+                        throw new \Exception(__('validation.bid_too_low', ['min' => $currentHighest]));
+                    }
+                } else {
+                    if ($amount < $auction->starting_price) {
+                         throw new \Exception(__('validation.bid_too_low', ['min' => $auction->starting_price]));
+                    }
+                }
+
+                $previousHighestBid = $auction->bids()->first(); // Only works if ordered by desc in model relation
+
+                // 5. Place Bid
+                $bid = $auction->bids()->create([
+                    'user_id' => $user->id,
+                    'amount' => $amount,
+                ]);
+
+                // 6. Update Auction
+                $auction->update(['current_price' => $amount]);
+
+                // 7. Events
+                \App\Events\BidPlaced::dispatch($bid);
+
+                // Notify previous bidder
+                if ($previousHighestBid && $previousHighestBid->user_id !== $user->id) {
+                    \App\Events\Outbid::dispatch($auction->id, $previousHighestBid->user_id, $amount);
+                }
+            });
+        } catch (\Exception $e) {
+            return back()->withErrors(['amount' => $e->getMessage()]);
         }
 
-        if ($auction->status !== 'active' || ($auction->ends_at && $auction->ends_at->isPast())) {
-            return back()->withErrors(['amount' => 'This auction has ended.']);
-        }
-
-        $bid = $auction->bids()->create([
-            'user_id' => $request->user()->id,
-            'amount' => $validated['amount'],
-        ]);
-
-        $auction->update(['current_price' => $validated['amount']]);
-
-        \App\Events\BidPlaced::dispatch($bid);
-
-        return back()->with('success', 'Bid placed successfully!');
+        return back()->with('success', __('auction.bid_success'));
     }
 
     public function index(Request $request)
     {
         $auctions = Auction::with('category', 'user')
-            ->where('status', 'active')
+            ->whereIn('status', [Auction::STATUS_ACTIVE, Auction::STATUS_UPCOMING])
             ->when($request->search, function ($query, $search) {
                 $query->where('title', 'like', "%{$search}%")
                       ->orWhere('description', 'like', "%{$search}%");
@@ -83,7 +135,8 @@ class AuctionsController extends Controller
             ->when($request->category, function ($query, $category) {
                 $query->where('category_id', $category);
             })
-            ->latest()
+            ->orderByRaw("FIELD(status, 'active', 'upcoming')") // Prioritize active
+            ->orderBy('ends_at', 'asc') // Ending soonest first
             ->paginate(10)
             ->withQueryString();
 
