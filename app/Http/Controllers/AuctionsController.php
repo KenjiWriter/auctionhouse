@@ -12,7 +12,7 @@ class AuctionsController extends Controller
     public function create()
     {
         return Inertia::render('Auctions/Create', [
-            'categories' => \App\Models\Category::all(),
+            'categories' => $this->getHierarchicalCategories(),
         ]);
     }
 
@@ -170,7 +170,7 @@ class AuctionsController extends Controller
         return Inertia::render('Auctions/Index', [
             'auctions' => $auctions,
             'filters' => $request->only(['search', 'category', 'min_price', 'max_price', 'buy_now', 'status']),
-            'categories' => \App\Models\Category::all(),
+            'categories' => $this->getHierarchicalCategories(),
         ]);
     }
 
@@ -239,7 +239,7 @@ class AuctionsController extends Controller
         ];
 
         return Inertia::render('Auctions/Create', [
-            'categories' => \App\Models\Category::all(),
+            'categories' => $this->getHierarchicalCategories(),
             'relistData' => $relistData, 
         ]);
     }
@@ -264,5 +264,24 @@ class AuctionsController extends Controller
             'auctions' => $auctions,
             'title' => 'Watchlist',
         ]);
+    }
+    private function getHierarchicalCategories()
+    {
+        $categories = \App\Models\Category::with('parent.parent')->get(); // Eager load up to 2 levels of parents for 3-level depth
+
+        return $categories->map(function ($category) {
+            $path = [];
+            $current = $category;
+            
+            while ($current) {
+                array_unshift($path, $current->name);
+                $current = $current->parent;
+            }
+
+            return [
+                'id' => $category->id,
+                'name' => implode(' > ', $path),
+            ];
+        })->sortBy('name')->values();
     }
 }
