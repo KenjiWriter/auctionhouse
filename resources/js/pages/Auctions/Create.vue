@@ -198,6 +198,17 @@ const submit = () => {
                 <!-- Step 4: Review -->
                 <div v-if="step === 4" class="space-y-4">
                     <h3 class="text-lg font-medium">Review Details</h3>
+
+                    <!-- Error Summary -->
+                    <div v-if="Object.keys(form.errors).length > 0" class="bg-red-50 text-red-600 p-4 rounded-md mb-4 border border-red-200">
+                        <p class="font-bold mb-2">Please fix the following errors:</p>
+                        <ul class="list-disc list-inside text-sm">
+                            <li v-for="(error, field) in form.errors" :key="field">
+                                <span class="capitalize">{{ field }}:</span> {{ error }}
+                            </li>
+                        </ul>
+                    </div>
+
                      <dl class="grid grid-cols-1 gap-x-4 gap-y-8 sm:grid-cols-2">
                         <div class="sm:col-span-1">
                             <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Title</dt>

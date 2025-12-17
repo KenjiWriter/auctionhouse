@@ -7,7 +7,24 @@ use Laravel\Fortify\Features;
 use App\Http\Controllers\AuthController;
 
 Route::get('/', function () {
-    return Inertia::render('Home');
+    $auctions = \App\Models\Auction::with('images')
+        ->where('status', 'active')
+        ->latest()
+        ->take(8)
+        ->get()
+        ->map(function ($auction) {
+            return [
+                'id' => $auction->id,
+                'title' => $auction->title,
+                'image' => $auction->images->first()?->path ? '/storage/' . $auction->images->first()->path : null,
+                'current_bid' => $auction->current_price ?? $auction->starting_price,
+                'ends_at' => $auction->ends_at,
+            ];
+        });
+
+    return Inertia::render('Home', [
+        'auctions' => $auctions
+    ]);
 })->name('home');
 
 Route::middleware('guest')->group(function () {
