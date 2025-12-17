@@ -45,7 +45,7 @@ const toggleWatch = () => {
     router.post(route('auctions.watch', props.auction.id), {}, {
         preserveScroll: true,
         onSuccess: () => {
-             displayToast(isWatched.value ? t('auction.added_to_watchlist') : t('auction.removed_from_watchlist'), 'success');
+             displayToast(isWatched.value ? t('auction.status.added_to_watchlist') : t('auction.status.removed_from_watchlist'), 'success');
         },
         onError: () => {
             // Revert on error
@@ -88,6 +88,34 @@ const toggleWatch = () => {
                                 'bg-green-100 text-green-800': userState === 'leading',
                                 'bg-red-100 text-red-800': userState === 'losing',
                                 'bg-gray-100 text-gray-800': userState === 'not_participating'
+                <div>
+                    <div class="flex justify-between items-start">
+                        <div class="flex gap-2">
+                             <span class="text-sm font-semibold px-2 py-1 bg-secondary text-secondary-foreground rounded-full">
+                                {{ auction.category.name }}
+                            </span>
+                             <!-- Watch Button -->
+                            <button 
+                                v-if="currentUser"
+                                @click="toggleWatch"
+                                class="p-1 rounded-full hover:bg-muted transition-colors"
+                                :title="isWatched ? 'Remove from Watchlist' : 'Add to Watchlist'"
+                            >
+                                <svg v-if="isWatched" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-yellow-400 fill-current" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                                </svg>
+                                 <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                                </svg>
+                            </button>
+                        </div>
+                        
+                        <!-- Status Badge -->
+                        <div v-if="userState !== 'guest' && userState !== 'owner'" class="px-3 py-1 rounded-full text-sm font-bold"
+                             :class="{
+                                'bg-green-100 text-green-800': userState === 'leading',
+                                'bg-red-100 text-red-800': userState === 'losing',
+                                'bg-gray-100 text-gray-800': userState === 'not_participating'
                              }">
                              {{ t(`auction.status.${userState}`) }}
                         </div>
@@ -120,7 +148,7 @@ const toggleWatch = () => {
                                 :href="route('auctions.relist', auction.id)"
                                 class="inline-block px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
                              >
-                                 Relist Auction
+                                 {{ t('auction.relist') }}
                              </Link>
                          </div>
                          <div v-else-if="auction.status !== 'active'" class="p-3 bg-gray-100 text-gray-600 rounded text-center text-sm">

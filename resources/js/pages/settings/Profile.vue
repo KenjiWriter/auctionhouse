@@ -102,7 +102,7 @@ const user = page.props.auth.user;
                         <Button
                             :disabled="processing"
                             data-test="update-profile-button"
-                            >Save</Button
+                            {{ t('common.save') }}</Button
                         >
 
                         <Transition
