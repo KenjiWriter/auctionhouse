@@ -14,7 +14,9 @@
         "account": "Konto",
         "chat": "Czat",
         "watched": "Obserwowane",
-        "add": "Dodaj"
+        "add": "Dodaj",
+        "profile": "Profil",
+        "bidding": "Licytowane"
     },
     "validation": {
         "auction_not_active": "Ta aukcja nie jest aktywna.",
@@ -40,7 +42,31 @@
         "autoBidMax": "Limit oferty",
         "autoBidEnabled": "Auto-oferta włączona",
         "autoBidDisabled": "Auto-oferta wyłączona",
-        "autoBidUpdated": "Ustawienia auto-oferty zaktualizowane"
+        "autoBidUpdated": "Ustawienia auto-oferty zaktualizowane",
+        "endedActionRequired": "Wymagane działanie",
+        "winner": "Zwycięzca",
+        "contactWinner": "Skontaktuj się ze zwycięzcą",
+        "finalPrice": "Cena końcowa",
+        "winnerInfo": "Informacje o zwycięzcy"
+    },
+    "profile": {
+        "stats": {
+            "auctions": "Utworzone aukcje",
+            "wins": "Wygrane aukcje",
+            "active": "Aktywne aukcje",
+            "joined": "Dołączył"
+        },
+        "edit": "Edytuj profil",
+        "tabs": {
+            "auctions": "Moje Aukcje",
+            "wins": "Wygrane",
+            "bidding": "Licytowane"
+        },
+        "empty": {
+            "auctions": "Brak utworzonych aukcji.",
+            "wins": "Brak wygranych aukcji.",
+            "bidding": "Brak aktywnych licytacji."
+        }
     },
     "chat": {
         "title": "Czat",

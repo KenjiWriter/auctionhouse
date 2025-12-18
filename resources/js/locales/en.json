@@ -14,7 +14,9 @@
         "my_wins": "My Wins",
         "account": "Account",
         "chat": "Chat",
-        "watched": "Watched"
+        "watched": "Watched",
+        "profile": "Profile",
+        "bidding": "Bidding"
     },
     "validation": {
         "auction_not_active": "This auction is not active.",
@@ -40,7 +42,31 @@
         "autoBidMax": "Max Bid Limit",
         "autoBidEnabled": "Auto-bid active",
         "autoBidDisabled": "Auto-bid inactive",
-        "autoBidUpdated": "Auto-bid settings updated"
+        "autoBidUpdated": "Auto-bid settings updated",
+        "endedActionRequired": "Action Required",
+        "winner": "Winner",
+        "contactWinner": "Contact Winner",
+        "finalPrice": "Final Price",
+        "winnerInfo": "Winner Information"
+    },
+    "profile": {
+        "stats": {
+            "auctions": "Auctions Created",
+            "wins": "Auctions Won",
+            "active": "Active Auctions",
+            "joined": "Member Since"
+        },
+        "edit": "Edit Profile",
+        "tabs": {
+            "auctions": "My Auctions",
+            "wins": "Wins",
+            "bidding": "Bidding"
+        },
+        "empty": {
+            "auctions": "No auctions created yet.",
+            "wins": "No auctions won yet.",
+            "bidding": "Not bidding on any active auctions."
+        }
     },
     "chat": {
         "title": "Chat",

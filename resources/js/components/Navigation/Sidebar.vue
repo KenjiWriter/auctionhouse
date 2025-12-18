@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
 import { useI18n } from 'vue-i18n';
-import { computed } from 'vue';
-import { Home, PlusCircle, User, Bell, Search, Gavel, Package, MessageSquare, Eye } from 'lucide-vue-next';
+import { ref, computed } from 'vue';
+import { Home, PlusCircle, User, Bell, Search, Gavel, Package, MessageSquare, Eye, ChevronDown } from 'lucide-vue-next';
 import { route } from 'ziggy-js';
 import { AppPageProps } from '@/types';
 
@@ -12,15 +12,22 @@ const user = computed(() => page.props.auth?.user);
 const unreadCount = computed(() => page.props.auth?.unread_messages_count || 0);
 
 const navigation = computed(() => [
-    { name: 'nav.home', href: route('home'), icon: Home },
-    { name: 'nav.search', href: route('auctions.index'), icon: Search },
-    { name: 'nav.watched', href: route('auctions.watched'), icon: Eye },
-    { name: 'nav.add_auction', href: route('auctions.create'), icon: PlusCircle },
+    { name: 'nav.home', href: route('home'), icon: Home, badge: 0 },
+    { name: 'nav.search', href: route('auctions.index'), icon: Search, badge: 0 },
+    { name: 'nav.watched', href: route('auctions.watched'), icon: Eye, badge: 0 },
+    { name: 'nav.add_auction', href: route('auctions.create'), icon: PlusCircle, badge: 0 },
+    { name: 'nav.chat', href: route('conversations.index'), icon: MessageSquare, badge: unreadCount.value },
+]);
+
+// Account submenu items
+const accountMenu = computed(() => [
+    { name: 'nav.profile', href: route('profile'), icon: User },
     { name: 'nav.my_auctions', href: route('auctions.mine'), icon: Package },
     { name: 'nav.my_wins', href: route('auctions.wins'), icon: Gavel },
-    { name: 'nav.chat', href: route('conversations.index'), icon: MessageSquare, badge: unreadCount.value },
-    { name: 'nav.account', href: route('register.complete'), icon: User },
+    { name: 'nav.bidding', href: route('profile.bidding'), icon: Gavel },
 ]);
+
+const showAccountMenu = ref(false);
 
 const switchLanguage = (lang: string) => {
     locale.value = lang;
@@ -51,6 +58,31 @@ const switchLanguage = (lang: string) => {
                             {{ item.badge }}
                         </span>
                     </Link>
+                </li>
+
+                <!-- Account Dropdown -->
+                <li v-if="user" class="relative">
+                    <button 
+                        @click="showAccountMenu = !showAccountMenu"
+                        class="w-full group flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                        :class="{ 'bg-sidebar-accent text-sidebar-accent-foreground': showAccountMenu || route().current('profile*') || route().current('auctions.mine') || route().current('auctions.wins') }"
+                    >
+                        <User class="h-4 w-4" />
+                        <span>{{ t('nav.account') }}</span>
+                        <ChevronDown class="h-3 w-3 ml-auto transition-transform" :class="{ 'rotate-180': showAccountMenu }" />
+                    </button>
+                    
+                    <div v-show="showAccountMenu" class="mt-1 ml-4 space-y-1 border-l pl-2">
+                        <Link
+                            v-for="item in accountMenu"
+                            :key="item.name"
+                            :href="item.href"
+                            class="group flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground"
+                            :class="{ 'text-primary font-semibold': route().current(item.href) }"
+                        >
+                            <span>{{ t(item.name) }}</span>
+                        </Link>
+                    </div>
                 </li>
             </ul>
         </nav>

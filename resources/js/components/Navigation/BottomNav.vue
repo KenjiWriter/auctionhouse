@@ -11,11 +11,11 @@ const page = usePage<AppPageProps>();
 const unreadCount = computed(() => page.props.auth?.unread_messages_count || 0);
 
 const navigation = computed(() => [
-    { name: 'nav.search', href: route('auctions.index'), icon: Search },
-    { name: 'nav.watched', href: route('auctions.watched'), icon: Eye },
-    { name: 'nav.add', href: route('auctions.create'), icon: PlusCircle },
+    { name: 'nav.search', href: route('auctions.index'), icon: Search, badge: 0 },
+    { name: 'nav.watched', href: route('auctions.watched'), icon: Eye, badge: 0 },
+    { name: 'nav.add', href: route('auctions.create'), icon: PlusCircle, badge: 0 },
     { name: 'nav.chat', href: route('conversations.index'), icon: MessageSquare, badge: unreadCount.value },
-    { name: 'nav.account', href: route('dashboard'), icon: User },
+    { name: 'nav.account', href: route('profile'), icon: User, badge: 0 },
 ]);
 </script>
 
