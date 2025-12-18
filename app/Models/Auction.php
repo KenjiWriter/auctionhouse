@@ -26,11 +26,13 @@ class Auction extends Model
         'ends_at',
         'status',
         'winner_id',
+        'seller_notified_at',
     ];
 
     protected $casts = [
         'starts_at' => 'datetime',
         'ends_at' => 'datetime',
+        'seller_notified_at' => 'datetime',
         'starting_price' => 'decimal:2',
         'current_price' => 'decimal:2',
         'buy_now_price' => 'decimal:2',
@@ -95,5 +97,17 @@ class Auction extends Model
             }]);
         }
         return $query;
+    }
+
+    public function scopeNeedsSellerNotification($query)
+    {
+        return $query->where('status', self::STATUS_ENDED)
+            ->whereNotNull('winner_id')
+            ->whereNull('seller_notified_at');
+    }
+
+    public function markSellerNotified()
+    {
+        $this->update(['seller_notified_at' => now()]);
     }
 }
