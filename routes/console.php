@@ -11,3 +11,4 @@ Artisan::command('inspire', function () {
 
 Schedule::job(new \App\Jobs\ActivateAuctions)->everyMinute();
 Schedule::job(new \App\Jobs\EndAuctions)->everyMinute();
+Schedule::command('notifications:send-watchlist-reminders')->everyMinute();

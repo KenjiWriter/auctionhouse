@@ -62,6 +62,16 @@ class User extends Authenticatable
         return $this->hasMany(AutoBid::class);
     }
 
+    public function notifications()
+    {
+        return $this->hasMany(UserNotification::class);
+    }
+
+    public function notificationSettings()
+    {
+        return $this->hasOne(UserNotificationSetting::class);
+    }
+
     /**
      * The attributes that should be hidden for serialization.
      *
