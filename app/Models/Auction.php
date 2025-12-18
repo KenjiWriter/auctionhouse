@@ -81,6 +81,11 @@ class Auction extends Model
         return $this->belongsToMany(User::class, 'auction_user')->withTimestamps();
     }
 
+    public function autoBids()
+    {
+        return $this->hasMany(AutoBid::class);
+    }
+
     public function scopeWithIsWatched($query)
     {
         $user = request()->user();
