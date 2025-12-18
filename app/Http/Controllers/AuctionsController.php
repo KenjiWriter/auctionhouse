@@ -144,6 +144,11 @@ class AuctionsController extends Controller
     {
         $auction->load(['category', 'user', 'images', 'bids.user']);
         
+        // Load winner for ended auctions
+        if ($auction->status === Auction::STATUS_ENDED && $auction->winner_id) {
+            $auction->load('winner');
+        }
+        
         $autoBid = null;
         // Load is_watched for single auction
         if ($user = request()->user()) {
@@ -255,5 +260,17 @@ class AuctionsController extends Controller
                 'name' => implode(' > ', $path),
             ];
         })->sortBy('name')->values();
+    }
+
+    public function markNotified(Request $request, Auction $auction)
+    {
+        // Only the seller can mark as notified
+        if ($request->user()->id !== $auction->user_id) {
+            abort(403);
+        }
+
+        $auction->markSellerNotified();
+
+        return back();
     }
 }

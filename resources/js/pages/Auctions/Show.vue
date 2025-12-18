@@ -6,6 +6,7 @@ import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import { route } from 'ziggy-js';
 import { useCountdown } from '@/composables/useCountdown';
 import { Mail } from 'lucide-vue-next';
+import WinnerPanel from '@/components/Auction/WinnerPanel.vue';
 
 const { t } = useI18n();
 const page = usePage();
@@ -25,6 +26,9 @@ const props = defineProps<{
         starts_at: string | null;
         ends_at: string;
         status: string;
+        winner?: { id: number; name: string; email: string; phone?: string };
+        winner_id?: number;
+        seller_notified_at?: string;
         images: Array<{ path: string }>;
         bids: Array<{ id: number; amount: number; user: { id: number; name: string }; user_id: number; created_at: string }>;
     };
@@ -73,6 +77,24 @@ const contactSeller = () => {
         auction_id: props.auction.id,
         receiver_id: props.auction.user_id
     });
+};
+
+const contactWinner = () => {
+    if (!props.auction.winner_id) return;
+
+    router.post(route('conversations.store'), {
+        auction_id: props.auction.id,
+        receiver_id: props.auction.winner_id
+    }, {
+        onSuccess: () => {
+             // Also mark as notified if not already
+             if (!props.auction.seller_notified_at) {
+                 router.post(route('auctions.notified', props.auction.id), {}, { preserveScroll: true });
+             }
+        }
+    });
+
+    // Optimistically update if needed, but router reload should handle
 };
 
 const userState = computed(() => {
@@ -198,6 +220,17 @@ onUnmounted(() => {
 
                 <!-- Right Column -->
                 <div class="space-y-6">
+                    
+                    <!-- Winner Panel for Seller -->
+                    <WinnerPanel 
+                        v-if="isOwner && auction.status === 'ended' && auction.winner"
+                        :winner="auction.winner"
+                        :final-price="Number(auction.current_price)"
+                        :auction-id="auction.id"
+                        :seller-notified-at="auction.seller_notified_at ?? null"
+                        @contact="contactWinner"
+                    />
+
                     <div class="flex justify-between items-start">
                         <div class="flex gap-2">
                              <span class="text-sm font-semibold px-2 py-1 bg-secondary text-secondary-foreground rounded-full">
