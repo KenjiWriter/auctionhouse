@@ -44,6 +44,11 @@ class User extends Authenticatable
         return $this->belongsToMany(Auction::class, 'auction_user')->withTimestamps();
     }
 
+    public function autoBids()
+    {
+        return $this->hasMany(AutoBid::class);
+    }
+
     /**
      * The attributes that should be hidden for serialization.
      *
