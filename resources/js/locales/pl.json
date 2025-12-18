@@ -23,7 +23,9 @@
         "auction_ended": "Ta aukcja się zakończyła.",
         "owner_cannot_bid": "Nie możesz licytować własnej aukcji.",
         "bid_too_low": "Oferta musi być wyższa niż ${min}.",
-        "bid_too_low_start": "Oferta musi wynosić co najmniej ${min}."
+        "bid_too_low_start": "Oferta musi wynosić co najmniej ${min}.",
+        "avatarTooLarge": "Zdjęcie musi mieć mniej niż 2MB.",
+        "avatarInvalidType": "Dozwolone są tylko zdjęcia JPEG, PNG lub WEBP."
     },
     "auction": {
         "bid_success": "Oferta złożona pomyślnie!",
@@ -66,7 +68,21 @@
             "auctions": "Brak utworzonych aukcji.",
             "wins": "Brak wygranych aukcji.",
             "bidding": "Brak aktywnych licytacji."
-        }
+        },
+        "avatar": {
+            "title": "Awatar profilu",
+            "uploadTab": "Prześlij zdjęcie",
+            "chooseTab": "Wybierz gotowy",
+            "uploadHint": "Maks. 2MB. Obsługiwane: PNG, JPG, WEBP.",
+            "remove": "Usuń awatar",
+            "presetsLabel": "Wybierz styl"
+        },
+        "complete": {
+            "title": "Uzupełnij swój profil",
+            "subtitle": "Powiedz nam coś o sobie, aby zacząć licytować."
+        },
+        "save": "Zapisz zmiany",
+        "saving": "Zapisywanie..."
     },
     "chat": {
         "title": "Czat",

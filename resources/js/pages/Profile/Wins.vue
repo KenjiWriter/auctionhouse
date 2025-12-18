@@ -28,7 +28,7 @@ const props = defineProps<{
 }>();
 
 const tabs = [
-    { name: 'profile.tabs.auctions', href: route('profile'), current: false, icon: Package },
+    { name: 'profile.tabs.auctions', href: route('profile.mine'), current: false, icon: Package },
     { name: 'profile.tabs.wins', href: route('profile.wins'), current: true, icon: Gavel },
     { name: 'profile.tabs.bidding', href: route('profile.bidding'), current: false, icon: Gavel },
 ];

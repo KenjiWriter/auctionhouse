@@ -23,7 +23,9 @@
         "auction_ended": "This auction has ended.",
         "owner_cannot_bid": "You cannot bid on your own auction.",
         "bid_too_low": "Bid must be higher than ${min}.",
-        "bid_too_low_start": "Bid must be at least ${min}."
+        "bid_too_low_start": "Bid must be at least ${min}.",
+        "avatarTooLarge": "Image must be under 2MB.",
+        "avatarInvalidType": "Only JPEG, PNG, or WEBP images are allowed."
     },
     "auction": {
         "bid_success": "Bid placed successfully!",
@@ -66,7 +68,21 @@
             "auctions": "No auctions created yet.",
             "wins": "No auctions won yet.",
             "bidding": "Not bidding on any active auctions."
-        }
+        },
+        "avatar": {
+            "title": "Profile Avatar",
+            "uploadTab": "Upload Image",
+            "chooseTab": "Choose Preset",
+            "uploadHint": "Max 2MB. Supported: PNG, JPG, WEBP.",
+            "remove": "Remove Avatar",
+            "presetsLabel": "Select a style"
+        },
+        "complete": {
+            "title": "Complete Your Profile",
+            "subtitle": "Tell us a bit about yourself to start bidding."
+        },
+        "save": "Save Changes",
+        "saving": "Saving..."
     },
     "chat": {
         "title": "Chat",

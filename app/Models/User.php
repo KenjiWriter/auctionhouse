@@ -27,6 +27,17 @@ class User extends Authenticatable
         'city',
         'postal_code',
         'country',
+        'avatar_path',
+        'avatar_preset',
+    ];
+
+    /**
+     * The accessors to append to the model's array form.
+     *
+     * @var array
+     */
+    protected $appends = [
+        'avatar_url',
     ];
 
     public function auctions()
@@ -73,5 +84,19 @@ class User extends Authenticatable
             'password' => 'hashed',
             'two_factor_confirmed_at' => 'datetime',
         ];
+    }
+
+    public function getAvatarUrlAttribute()
+    {
+        if ($this->avatar_path) {
+            return asset('storage/' . $this->avatar_path);
+        }
+        
+        if ($this->avatar_preset) {
+            // We just return the preset ID, frontend handles rendering
+            return $this->avatar_preset;
+        }
+
+        return 'default';
     }
 }

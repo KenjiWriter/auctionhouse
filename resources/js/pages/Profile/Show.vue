@@ -15,6 +15,7 @@ const props = defineProps<{
         name: string;
         email: string;
         created_at: string;
+        avatar_url?: string;
     };
     isOwner: boolean;
     stats: {
@@ -40,7 +41,7 @@ const props = defineProps<{
 
 const tabs = computed(() => {
     const items = [
-        { name: 'profile.tabs.auctions', href: route('profile', props.profileUser.id), current: true, icon: Package },
+        { name: 'profile.tabs.auctions', href: route('profile.show', props.profileUser.id), current: true, icon: Package },
     ];
 
     if (props.isOwner) {
@@ -64,8 +65,18 @@ const tabs = computed(() => {
                 <div class="h-32 bg-primary/10"></div>
                 <div class="px-6 pb-6 relative">
                      <div class="flex flex-col sm:flex-row items-start sm:items-end -mt-12 mb-4 gap-4">
-                        <div class="h-24 w-24 rounded-full bg-background border-4 border-background flex items-center justify-center shadow-md">
-                            <span class="text-3xl font-bold text-primary">{{ profileUser.name.charAt(0) }}</span>
+                        <div class="h-24 w-24 rounded-full bg-background border-4 border-background flex items-center justify-center shadow-md overflow-hidden relative">
+                             <img 
+                                v-if="profileUser.avatar_url && (profileUser.avatar_url.startsWith('http') || profileUser.avatar_url.startsWith('/'))" 
+                                :src="profileUser.avatar_url" 
+                                class="h-full w-full object-cover"
+                            />
+                            <div 
+                                v-else-if="profileUser.avatar_url && profileUser.avatar_url.startsWith('bg-')" 
+                                class="h-full w-full" 
+                                :class="profileUser.avatar_url"
+                            ></div>
+                            <span v-else class="text-3xl font-bold text-primary">{{ profileUser.name.charAt(0) }}</span>
                         </div>
                         <div class="flex-1 mb-2">
                             <h1 class="text-2xl font-bold text-foreground">{{ profileUser.name }}</h1>
@@ -80,7 +91,7 @@ const tabs = computed(() => {
                             </div>
                         </div>
                         <div v-if="isOwner">
-                            <Link :href="route('register.complete')" class="flex items-center gap-2 px-4 py-2 bg-secondary text-secondary-foreground rounded-md hover:bg-secondary/80 transition-colors text-sm font-medium">
+                            <Link :href="route('profile.me.edit')" class="flex items-center gap-2 px-4 py-2 bg-secondary text-secondary-foreground rounded-md hover:bg-secondary/80 transition-colors text-sm font-medium">
                                 <Edit class="h-4 w-4" />
                                 {{ t('profile.edit') }}
                             </Link>

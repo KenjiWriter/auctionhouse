@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
 class AuthController extends Controller
@@ -72,6 +73,8 @@ class AuthController extends Controller
             'city' => 'required|string|max:255',
             'postal_code' => 'required|string|max:20',
             'country' => 'required|string|max:255',
+            'avatar' => 'nullable|image|max:2048', // Max 2MB
+            'avatar_preset' => 'nullable|string',
         ]);
 
         $user = $request->user();
@@ -85,6 +88,26 @@ class AuthController extends Controller
             'country' => $request->country,
         ]);
 
-        return redirect()->intended('/dashboard');
+        if ($request->hasFile('avatar')) {
+            $path = $request->file('avatar')->storePublicly(
+                'avatars/' . $user->id,
+                ['disk' => 'public']
+            );
+            $user->update([
+                'avatar_path' => $path,
+                'avatar_preset' => null,
+            ]);
+        } elseif ($request->avatar_preset) {
+             // Delete old avatar if exists
+             if ($user->avatar_path) {
+                 Storage::disk('public')->delete($user->avatar_path);
+             }
+             $user->update([
+                 'avatar_path' => null,
+                 'avatar_preset' => $request->avatar_preset,
+             ]);
+        }
+
+        return redirect()->route('home');
     }
 }

@@ -35,6 +35,14 @@ export interface User {
     email_verified_at: string | null;
     created_at: string;
     updated_at: string;
+    avatar_url?: string;
+    avatar_path?: string;
+    avatar_preset?: string;
+    phone?: string;
+    address?: string;
+    city?: string;
+    postal_code?: string;
+    country?: string;
 }
 
 export type BreadcrumbItemType = BreadcrumbItem;

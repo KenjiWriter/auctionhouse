@@ -21,7 +21,7 @@ const navigation = computed(() => [
 
 // Account submenu items
 const accountMenu = computed(() => [
-    { name: 'nav.profile', href: route('profile'), icon: User },
+    { name: 'nav.profile', href: route('profile.mine'), icon: User },
     { name: 'nav.my_auctions', href: route('auctions.mine'), icon: Package },
     { name: 'nav.my_wins', href: route('auctions.wins'), icon: Gavel },
     { name: 'nav.bidding', href: route('profile.bidding'), icon: Gavel },
@@ -107,8 +107,23 @@ const switchLanguage = (lang: string) => {
             </div>
 
             <div v-if="user" class="flex items-center gap-3">
-                 <div class="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">
-                    {{ user.name.charAt(0) }}
+                <div class="h-8 w-8 rounded-full overflow-hidden shrink-0">
+                    <img 
+                        v-if="user.avatar_url && (user.avatar_url.startsWith('http') || user.avatar_url.startsWith('/'))" 
+                        :src="user.avatar_url" 
+                        class="h-full w-full object-cover"
+                    />
+                    <div 
+                        v-else-if="user.avatar_url && user.avatar_url.startsWith('bg-')" 
+                        class="h-full w-full" 
+                        :class="user.avatar_url"
+                    ></div>
+                    <div 
+                        v-else 
+                        class="h-full w-full bg-primary/20 flex items-center justify-center text-primary font-bold"
+                    >
+                        {{ user.name.charAt(0) }}
+                    </div>
                 </div>
                 <div class="flex flex-col">
                     <span class="text-sm font-medium">{{ user.name }}</span>

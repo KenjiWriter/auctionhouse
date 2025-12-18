@@ -15,7 +15,7 @@ const navigation = computed(() => [
     { name: 'nav.watched', href: route('auctions.watched'), icon: Eye, badge: 0 },
     { name: 'nav.add', href: route('auctions.create'), icon: PlusCircle, badge: 0 },
     { name: 'nav.chat', href: route('conversations.index'), icon: MessageSquare, badge: unreadCount.value },
-    { name: 'nav.account', href: route('profile'), icon: User, badge: 0 },
+    { name: 'nav.account', href: route('profile.mine'), icon: User, badge: 0 },
 ]);
 </script>
 

@@ -55,7 +55,9 @@ Route::middleware('auth')->group(function () {
     
     // Profile
     // Profile
-    Route::get('profile', [ProfileController::class, 'show'])->name('profile');
+    Route::get('profile', [ProfileController::class, 'show'])->name('profile.mine');
+    Route::get('profile/edit', [ProfileController::class, 'edit'])->name('profile.me.edit');
+    Route::post('profile/update', [ProfileController::class, 'update'])->name('profile.me.update');
     Route::get('profile/bidding', [ProfileController::class, 'bidding'])->name('profile.bidding');
     Route::get('profile/wins', [ProfileController::class, 'wins'])->name('profile.wins');
     Route::get('profile/{user}', [ProfileController::class, 'show'])->name('profile.show');

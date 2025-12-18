@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Models\Auction;
 use App\Models\Bid;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
 class ProfileController extends Controller
@@ -89,5 +90,60 @@ class ProfileController extends Controller
         return Inertia::render('Profile/Wins', [
             'wins' => $wins,
         ]);
+    }
+
+    public function edit(Request $request)
+    {
+        return Inertia::render('Profile/Edit', [
+            'user' => $request->user(),
+        ]);
+    }
+
+    public function update(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'phone' => 'nullable|string|max:20',
+            'address' => 'nullable|string|max:255',
+            'city' => 'nullable|string|max:255',
+            'postal_code' => 'nullable|string|max:20',
+            'country' => 'nullable|string|max:255',
+            'avatar' => 'nullable|image|max:2048',
+            'avatar_preset' => 'nullable|string',
+        ]);
+
+        $user = $request->user();
+        $user->update([
+            'name' => $request->name,
+            'phone' => $request->phone,
+            'address' => $request->address,
+            'city' => $request->city,
+            'postal_code' => $request->postal_code,
+            'country' => $request->country,
+        ]);
+
+        if ($request->hasFile('avatar')) {
+             if ($user->avatar_path) {
+                 Storage::disk('public')->delete($user->avatar_path);
+             }
+            $path = $request->file('avatar')->storePublicly(
+                'avatars/' . $user->id,
+                ['disk' => 'public']
+            );
+            $user->update([
+                'avatar_path' => $path,
+                'avatar_preset' => null,
+            ]);
+        } elseif ($request->avatar_preset) {
+             if ($user->avatar_path) {
+                 Storage::disk('public')->delete($user->avatar_path);
+             }
+             $user->update([
+                 'avatar_path' => null,
+                 'avatar_preset' => $request->avatar_preset,
+             ]);
+        }
+        
+        return redirect()->route('profile.mine');
     }
 }
