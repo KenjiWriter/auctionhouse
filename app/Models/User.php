@@ -29,6 +29,8 @@ class User extends Authenticatable
         'country',
         'avatar_path',
         'avatar_preset',
+        'marketing_opt_in',
+        'terms_accepted',
     ];
 
     /**
