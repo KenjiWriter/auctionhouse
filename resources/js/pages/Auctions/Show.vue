@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
-import { Head, useForm, usePage, Link } from '@inertiajs/vue3';
+import { Head, useForm, usePage, Link, router } from '@inertiajs/vue3';
 import { useI18n } from 'vue-i18n';
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import { route } from 'ziggy-js';
@@ -15,11 +15,12 @@ const props = defineProps<{
         title: string;
         description: string;
         is_watched: boolean;
-        curent_price: number;
+        current_price: number;
         starting_price: number;
         category: { name: string };
         user: { id: number; name: string };
         user_id: number;
+        starts_at: string | null;
         ends_at: string;
         status: string;
         images: Array<{ path: string }>;
@@ -28,7 +29,6 @@ const props = defineProps<{
 }>();
 
 const mainImage = ref(props.auction.images[0]?.path || null);
-const bidAmount = ref('' as number | string);
 const isOutbid = ref(false);
 const showToast = ref(false);
 const toastMessage = ref('');
@@ -37,29 +37,106 @@ const isWatched = ref(props.auction.is_watched || false);
 const currentPrice = ref(Number(props.auction.current_price || props.auction.starting_price));
 const bids = ref([...props.auction.bids]);
 
-const toggleWatch = () => {
-    if (!currentUser.value) return; // Or redirect to login
+const form = useForm({
+    amount: '' as number | string
+});
+
+const isOwner = computed(() => currentUser.value?.id === props.auction.user_id);
+
+const userState = computed(() => {
+    if (!currentUser.value) return 'guest';
+    if (isOwner.value) return 'owner';
     
-    // Optimistic UI update
+    const displayBids = bids.value || [];
+    if (displayBids.length === 0) return 'not_participating';
+
+    const highestBidderId = displayBids[0]?.user_id;
+    if (highestBidderId === currentUser.value.id) return 'leading';
+
+    const hasBid = displayBids.some(b => b.user_id === currentUser.value.id);
+    if (hasBid) return 'losing';
+
+    return 'not_participating';
+});
+
+const minBidAmount = computed(() => {
+    const current = Number(currentPrice.value);
+    // If no bids, min bid is starting price. If bids, must be higher (e.g. +1 or +0.01)
+    // For now, let's say must be > current price + 1 if there are bids, or just > current if no bids?
+    // Logic: if no bids, can bid starting price.
+    if (!bids.value || bids.value.length === 0) {
+        return Number(props.auction.starting_price);
+    }
+    return current + 1.00; // Increment step
+});
+
+const submitBid = () => {
+    form.post(route('auctions.bid', props.auction.id), {
+        preserveScroll: true,
+        onSuccess: () => {
+            form.reset();
+            toastMessage.value = t('auction.bid_success');
+            showToast.value = true;
+            // Update local bids and price if needed, but Inertia reload should handle it
+        },
+    });
+};
+
+const toggleWatch = () => {
+    if (!currentUser.value) return; 
+    
     isWatched.value = !isWatched.value;
 
     router.post(route('auctions.watch', props.auction.id), {}, {
         preserveScroll: true,
-        onSuccess: () => {
-             displayToast(isWatched.value ? t('auction.status.added_to_watchlist') : t('auction.status.removed_from_watchlist'), 'success');
-        },
         onError: () => {
-            // Revert on error
             isWatched.value = !isWatched.value;
         }
     });
 };
 
-// ... (existing computed properties)
+onMounted(() => {
+    // @ts-ignore
+    console.log(`Subscribing to auctions.${props.auction.id}`);
+    window.Echo.channel(`auctions.${props.auction.id}`)
+        .listen('.bid.placed', (e: { bid: any }) => {
+            console.log('BidPlaced event received:', e);
+            bids.value.unshift(e.bid);
+            currentPrice.value = Number(e.bid.amount);
+            
+            // Check if we were outbid (just visual, logic is computed)
+            if (currentUser.value && e.bid.user_id !== currentUser.value.id) {
+                // Determine if we participated
+                const myLastBid = bids.value.find(b => b.user_id === currentUser.value.id);
+                // If we have a bid and it's not the top one (checked above), we might be outbid.
+                // However, logic is simpler: if new bid is not ours, and we are 'losing', show toast?
+                // The 'userState' computed property will update automatically.
+                if (myLastBid) {
+                     isOutbid.value = true;
+                     toastMessage.value = t('auction.outbid');
+                     showToast.value = true;
+                }
+            }
+        });
 
-// ...
+    if (currentUser.value) {
+        // @ts-ignore
+        window.Echo.private(`App.Models.User.${currentUser.value.id}`)
+            .listen('.user.outbid', (e: any) => {
+                console.log('Outbid event received:', e);
+                if (e.auctionId === props.auction.id) {
+                    isOutbid.value = true;
+                    toastMessage.value = t('auction.outbid');
+                    showToast.value = true;
+                }
+            });
+    }
+});
 
-
+onUnmounted(() => {
+    // @ts-ignore
+    window.Echo.leave(`auctions.${props.auction.id}`);
+});
 </script>
 
 <template>
@@ -99,7 +176,7 @@ const toggleWatch = () => {
                                 v-if="currentUser"
                                 @click="toggleWatch"
                                 class="p-1 rounded-full hover:bg-muted transition-colors"
-                                :title="isWatched ? 'Remove from Watchlist' : 'Add to Watchlist'"
+                                :title="isWatched ? t('auction.status.removed_from_watchlist') : t('auction.status.added_to_watchlist')"
                             >
                                 <svg v-if="isWatched" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-yellow-400 fill-current" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
@@ -134,8 +211,10 @@ const toggleWatch = () => {
                             </p>
                         </div>
                         <div class="text-right">
-                            <p class="text-sm text-muted-foreground">Ends In</p>
-                            <p class="text-xl font-bold">{{ new Date(auction.ends_at).toLocaleDateString() }}</p> 
+                            <p v-if="auction.status === 'upcoming' && auction.starts_at" class="text-sm text-muted-foreground">Starts In</p>
+                            <p v-else class="text-sm text-muted-foreground">Ends In</p>
+                            <p v-if="auction.status === 'upcoming' && auction.starts_at" class="text-xl font-bold">{{ new Date(auction.starts_at).toLocaleString() }}</p> 
+                            <p v-else class="text-xl font-bold">{{ new Date(auction.ends_at).toLocaleString() }}</p> 
                         </div>
                     </div>
 
@@ -156,18 +235,18 @@ const toggleWatch = () => {
                          </div>
                          <form v-else @submit.prevent="submitBid" class="flex gap-2">
                              <input 
-                                v-model="bidAmount" 
+                                v-model="form.amount" 
                                 type="number" 
                                 step="0.01" 
                                 :min="minBidAmount"
                                 class="flex-1 rounded-md border-border bg-background" 
-                                :placeholder="t('auction.bid_too_low_start', { min: minBidAmount.toFixed(2) })"
+                                :placeholder="t('validation.bid_too_low_start', { min: minBidAmount.toFixed(2) })"
                                 required
                                 :disabled="form.processing"
                              />
                              <button 
                                 type="submit" 
-                                :disabled="form.processing || !bidAmount || bidAmount <= currentPrice"
+                                :disabled="form.processing || !form.amount"
                                 class="px-6 py-2 bg-primary text-primary-foreground rounded-md font-bold hover:bg-primary/90 disabled:opacity-50 flex items-center gap-2"
                             >
                                  <span v-if="form.processing" class="animate-spin">⏳</span>

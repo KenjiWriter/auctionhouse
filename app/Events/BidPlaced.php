@@ -36,4 +36,9 @@ class BidPlaced implements ShouldBroadcast
             new Channel('auctions.' . $this->bid->auction_id),
         ];
     }
+
+    public function broadcastAs(): string
+    {
+        return 'bid.placed';
+    }
 }

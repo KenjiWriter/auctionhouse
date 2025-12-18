@@ -21,6 +21,7 @@ const props = defineProps<{
             category: { name: string };
             user: { id: number; name: string };
             ends_at: string;
+            starts_at: string | null;
             status: string;
             is_watched?: boolean;
         }>;
@@ -154,8 +155,11 @@ watch([search, category, minPrice, maxPrice, buyNow, status], debounce(() => {
                         </div>
                         <div class="text-right flex flex-col items-end gap-2">
                              <div>
-                                 <p class="text-xs text-muted-foreground">Ends</p>
-                                 <p class="text-sm font-medium">{{ new Date(auction.ends_at).toLocaleDateString() }}</p>
+                                 <p v-if="auction.status === 'upcoming' && auction.starts_at" class="text-xs text-muted-foreground">Starts</p>
+                                 <p v-else class="text-xs text-muted-foreground">Ends</p>
+                                 
+                                 <p v-if="auction.status === 'upcoming' && auction.starts_at" class="text-sm font-medium">{{ new Date(auction.starts_at).toLocaleString() }}</p>
+                                 <p v-else class="text-sm font-medium">{{ new Date(auction.ends_at).toLocaleString() }}</p>
                              </div>
                              <Link 
                                 v-if="currentUser && currentUser.id === auction.user.id && ['ended', 'ended_without_sale'].includes(auction.status)"

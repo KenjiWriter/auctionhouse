@@ -7,10 +7,12 @@
         "home": "Home",
         "search": "Search",
         "add_auction": "Add Auction",
+        "add": "Add",
         "my_auctions": "My Auctions",
         "my_wins": "My Wins",
         "account": "Account",
-        "chat": "Chat"
+        "chat": "Chat",
+        "watched": "Watched"
     },
     "validation": {
         "auction_not_active": "This auction is not active.",

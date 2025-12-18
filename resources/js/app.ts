@@ -7,12 +7,8 @@ import { createPinia } from 'pinia';
 import { createApp, h } from 'vue';
 import { initializeTheme } from './composables/useAppearance';
 import i18n from './i18n';
-import { configureEcho } from '@laravel/echo-vue';
 import { ZiggyVue } from 'ziggy-js';
-
-configureEcho({
-    broadcaster: 'reverb',
-});
+import './echo';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 

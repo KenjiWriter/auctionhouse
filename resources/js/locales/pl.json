@@ -10,7 +10,9 @@
         "my_auctions": "Moje Aukcje",
         "my_wins": "Moje Wygrane",
         "account": "Konto",
-        "chat": "Czat"
+        "chat": "Czat",
+        "watched": "Obserwowane",
+        "add": "Dodaj"
     },
     "validation": {
         "auction_not_active": "Ta aukcja nie jest aktywna.",
@@ -26,8 +28,11 @@
             "leading": "Wygrywasz",
             "losing": "Przegrywasz",
             "not_participating": "Nie bierzesz udziału",
-            "won": "Wygrałeś"
-        }
+            "won": "Wygrałeś",
+            "added_to_watchlist": "Dodano do obserwowanych",
+            "removed_from_watchlist": "Usunięto z obserwowanych"
+        },
+        "relist": "Wystaw ponownie"
     },
     "auth": {
         "login": "Zaloguj się",

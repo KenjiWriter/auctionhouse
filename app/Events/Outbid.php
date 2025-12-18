@@ -39,4 +39,9 @@ class Outbid implements ShouldBroadcast
             new PrivateChannel('App.Models.User.' . $this->userId),
         ];
     }
+
+    public function broadcastAs(): string
+    {
+        return 'user.outbid';
+    }
 }
