@@ -1,7 +1,9 @@
 {
     "common": {
         "welcome": "Welcome",
-        "save": "Save"
+        "save": "Save",
+        "update": "Update",
+        "set": "Set"
     },
     "nav": {
         "home": "Home",
@@ -32,7 +34,18 @@
             "added_to_watchlist": "Added to watchlist",
             "removed_from_watchlist": "Removed from watchlist"
         },
-        "relist": "Relist Auction"
+        "relist": "Relist Auction",
+        "ended": "Ended",
+        "autoBid": "Auto-bid",
+        "autoBidMax": "Max Bid Limit",
+        "autoBidEnabled": "Auto-bid active",
+        "autoBidDisabled": "Auto-bid inactive",
+        "autoBidUpdated": "Auto-bid settings updated"
+    },
+    "chat": {
+        "title": "Chat",
+        "unread": "unread",
+        "writeToSeller": "Message Seller"
     },
     "auth": {
         "login": "Log in",

@@ -1,7 +1,9 @@
 {
     "common": {
         "welcome": "Witamy",
-        "save": "Zapisz"
+        "save": "Zapisz",
+        "update": "Aktualizuj",
+        "set": "Ustaw"
     },
     "nav": {
         "home": "Strona główna",
@@ -32,7 +34,18 @@
             "added_to_watchlist": "Dodano do obserwowanych",
             "removed_from_watchlist": "Usunięto z obserwowanych"
         },
-        "relist": "Wystaw ponownie"
+        "relist": "Wystaw ponownie",
+        "ended": "Zakończona",
+        "autoBid": "Automatyczna oferta",
+        "autoBidMax": "Limit oferty",
+        "autoBidEnabled": "Auto-oferta włączona",
+        "autoBidDisabled": "Auto-oferta wyłączona",
+        "autoBidUpdated": "Ustawienia auto-oferty zaktualizowane"
+    },
+    "chat": {
+        "title": "Czat",
+        "unread": "nieprzeczytane",
+        "writeToSeller": "Napisz do sprzedawcy"
     },
     "auth": {
         "login": "Zaloguj się",
