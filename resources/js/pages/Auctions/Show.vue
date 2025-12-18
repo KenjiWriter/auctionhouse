@@ -7,6 +7,7 @@ import { route } from 'ziggy-js';
 import { useCountdown } from '@/composables/useCountdown';
 import { Mail } from 'lucide-vue-next';
 import WinnerPanel from '@/components/Auction/WinnerPanel.vue';
+import PostAuctionPanel from '@/components/Auction/PostAuctionPanel.vue';
 
 const { t } = useI18n();
 const page = usePage();
@@ -29,6 +30,12 @@ const props = defineProps<{
         winner?: { id: number; name: string; email: string; phone?: string };
         winner_id?: number;
         seller_notified_at?: string;
+        post_status?: string;
+        seller_contacted_at?: string | null;
+        buyer_confirmed_at?: string | null;
+        seller_confirmed_at?: string | null;
+        disputed_at?: string | null;
+        dispute_reason?: string | null;
         images: Array<{ path: string }>;
         bids: Array<{ id: number; amount: number; user: { id: number; name: string }; user_id: number; created_at: string }>;
     };
@@ -380,6 +387,15 @@ onUnmounted(() => {
                     </div>
                     <p>{{ auction.description }}</p>
                 </div>
+
+                <!-- Post-Auction Lifecycle Panel -->
+                <PostAuctionPanel 
+                    v-if="auction.status === 'ended' && auction.winner_id"
+                    :auction="auction"
+                    :winner="auction.winner"
+                    :is-seller="isOwner"
+                    :is-winner="currentUser?.id === auction.winner_id"
+                />
             </div>
         </div>
 

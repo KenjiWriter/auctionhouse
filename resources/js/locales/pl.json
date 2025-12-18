@@ -147,8 +147,16 @@
                 "body": "Rozpoczyna się za ${minutes} minut"
             },
             "watch_auction_ending": {
-                "title": "Aukcja wkrótce się kończy",
-                "body": "Kończy się za ${minutes} minut"
+                "title": "Aukcja kończy się wkrótce",
+                "body": "{auction_title} kończy się za {minutes} minut\nAktualna cena: ${current_price}"
+            },
+            "auction_won_action_required": {
+                "title": "Wymagane działanie - Aukcja wygrana",
+                "body": "{auction_title}\nZwycięzca: {winner_name}\nSkontaktuj się ze zwycięzcą."
+            },
+            "dispute_opened": {
+                "title": "Otwarty spór",
+                "body": "Spór został otwarty dla {auction_title}"
             }
         },
         "currentPrice": "Aktualna cena",

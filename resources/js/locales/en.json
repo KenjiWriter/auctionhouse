@@ -149,7 +149,15 @@
             },
             "watch_auction_ending": {
                 "title": "Auction ending soon",
-                "body": "Ends in ${minutes} minutes"
+                "body": "{auction_title} ends in {minutes} minutes\nCurrent price: ${current_price}"
+            },
+            "auction_won_action_required": {
+                "title": "Action Required - Auction Won",
+                "body": "{auction_title}\nWinner: {winner_name}\nPlease contact the winner."
+            },
+            "dispute_opened": {
+                "title": "Dispute Opened",
+                "body": "A dispute was opened for {auction_title}"
             }
         },
         "currentPrice": "Current Price",
