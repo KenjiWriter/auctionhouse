@@ -56,7 +56,7 @@ class ProfileController extends Controller
             $q->where('user_id', $user->id);
         })
         ->whereIn('status', [Auction::STATUS_ACTIVE, Auction::STATUS_UPCOMING])
-        ->with(['category', 'images', 'bids' => function ($q) {
+        ->with(['category', 'images', 'user', 'bids' => function ($q) {
             $q->orderByDesc('amount')->limit(1);
         }])
         ->get()
