@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="public/branding/banner.png" alt="AuctionHouse Banner" width="800">
+<img src="public/branding/banner.gif" alt="AuctionHouse Banner" width="800">
 
 # 🔨 AuctionHouse
 

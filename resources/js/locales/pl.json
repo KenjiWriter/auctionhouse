@@ -18,6 +18,12 @@
         "profile": "Profil",
         "bidding": "Licytowane"
     },
+    "home": {
+        "forYou": {
+            "title": "Dla Ciebie",
+            "subtitle": "Na podstawie Twojej aktywności"
+        }
+    },
     "validation": {
         "auction_not_active": "Ta aukcja nie jest aktywna.",
         "auction_ended": "Ta aukcja się zakończyła.",

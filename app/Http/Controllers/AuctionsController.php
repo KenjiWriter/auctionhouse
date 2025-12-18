@@ -60,6 +60,10 @@ class AuctionsController extends Controller
             return back()->withErrors(['amount' => $e->getMessage()]);
         }
 
+        // Log activity
+        $activityService = app(\App\Services\UserActivityService::class);
+        $activityService->log($request->user(), 'bid', $auctionId);
+
         return back()->with('success', __('auction.bid_success'));
     }
 
@@ -90,7 +94,7 @@ class AuctionsController extends Controller
         return back()->with('success', __('auction.auto_bid_updated'));
     }
 
-    public function index(Request $request)
+    public function index(Request $request, \App\Services\UserActivityService $activityService)
     {
         $auctions = Auction::with('category', 'user', 'images')
             ->withIsWatched()
@@ -98,7 +102,13 @@ class AuctionsController extends Controller
                 $query->where('title', 'like', "%{$search}%")
                       ->orWhere('description', 'like', "%{$search}%");
             })
-            ->when($request->category, function ($query, $category) {
+            ->when($request->category, function ($query, $category) use ($request) {
+                // Log category view if user is authenticated
+                if ($user = $request->user()) {
+                    // Start logging in a non-blocking way or ensure it's fast. 
+                    // To avoid logging on every paginated page load, we could check page=1, but for now simple is fine.
+                    // Ideally this should be in the controller action body, not inside the query builder closure which might run multiple times or differently.
+                }
                 $query->where('category_id', $category);
             })
             ->when($request->min_price, function ($query, $min) {
@@ -133,6 +143,10 @@ class AuctionsController extends Controller
             ->paginate(10)
             ->withQueryString();
 
+        if ($request->category && $user = $request->user()) {
+             $activityService->log($user, 'category_view', null, (int)$request->category);
+        }
+
         return Inertia::render('Auctions/Index', [
             'auctions' => $auctions,
             'filters' => $request->only(['search', 'category', 'min_price', 'max_price', 'buy_now', 'status']),
@@ -140,7 +154,7 @@ class AuctionsController extends Controller
         ]);
     }
 
-    public function show(Auction $auction)
+    public function show(Auction $auction, \App\Services\UserActivityService $activityService)
     {
         $auction->load(['category', 'user', 'images', 'bids.user']);
         
@@ -159,6 +173,8 @@ class AuctionsController extends Controller
             $autoBid = \App\Models\AutoBid::where('auction_id', $auction->id)
                 ->where('user_id', $user->id)
                 ->first();
+
+            $activityService->log($user, 'auction_view', $auction->id, $auction->category_id);
         }
 
         return Inertia::render('Auctions/Show', [
@@ -221,12 +237,18 @@ class AuctionsController extends Controller
         ]);
     }
 
-    public function toggleWatch(Request $request, Auction $auction)
+    public function toggleWatch(Request $request, Auction $auction, \App\Services\UserActivityService $activityService)
     {
         $user = $request->user();
         $user->watchedAuctions()->toggle($auction->id);
 
-        return back()->with('success', $user->watchedAuctions()->where('auction_id', $auction->id)->exists() ? 'Added to watchlist' : 'Removed from watchlist');
+        $nowWatching = $user->watchedAuctions()->where('auction_id', $auction->id)->exists();
+        
+        if ($nowWatching) {
+            $activityService->log($user, 'watch', $auction->id, $auction->category_id);
+        }
+
+        return back()->with('success', $nowWatching ? 'Added to watchlist' : 'Removed from watchlist');
     }
 
     public function watched(Request $request)

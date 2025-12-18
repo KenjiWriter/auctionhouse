@@ -18,6 +18,12 @@
         "profile": "Profile",
         "bidding": "Bidding"
     },
+    "home": {
+        "forYou": {
+            "title": "For You",
+            "subtitle": "Based on your activity"
+        }
+    },
     "validation": {
         "auction_not_active": "This auction is not active.",
         "auction_ended": "This auction has ended.",
