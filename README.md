@@ -23,6 +23,8 @@ Built for speed, modern UX, and seamless live interactions.
 *   **Live Bidding**: Powered by **Laravel Reverb**. Watch updates happen instantly.
 *   **Smart Notifications**: Real-time "Outbid" alerts and status synchronization.
 *   **Instant Messaging**: Integrated chat system for every auction thread.
+*   **User Profiles**: Comprehensive user dashboard with activity tracking, wins, and bidding history.
+*   **Seller Tools**: Automated notifications and contact handling for ended auctions.
 
 ### 💎 User Experience
 *   **3-Step Creation Flow**: Intuitive, frictionless auction builder.
