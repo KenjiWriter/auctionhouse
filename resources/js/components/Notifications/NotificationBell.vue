@@ -68,11 +68,18 @@ const getNotificationLink = (notification: any) => {
 };
 
 const handleNotificationClick = (notification: any) => {
-    isOpen.value = false;
-    const link = getNotificationLink(notification);
-    if (link) {
-        router.visit(link);
-    }
+    // Mark notification as read
+    router.post(route('notifications.read', notification.id), {}, {
+        preserveScroll: true,
+        onSuccess: () => {
+            isOpen.value = false;
+            fetchUnreadCount();
+            const link = getNotificationLink(notification);
+            if (link) {
+                router.visit(link);
+            }
+        }
+    });
 };
 
 onMounted(() => {
