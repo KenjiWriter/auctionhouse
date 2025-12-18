@@ -30,6 +30,7 @@ Built for speed, modern UX, and seamless live interactions.
 *   **3-Step Creation Flow**: Intuitive, frictionless auction builder.
 *   **Image Management**: Advanced drag & drop reordering and gallery previews.
 *   **Intelligent Discovery**: category-based search with advanced price and status filters.
+*   **Personalized Recommendations**: "For You" section tailored to user activity (views, bids, watchlist).
 *   **Smart Relisting**: One-click reactivation of ended auctions.
 
 ### 🌍 Infrastructure
