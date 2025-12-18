@@ -21,10 +21,11 @@ Built for speed, modern UX, and seamless live interactions.
 
 ### 🚀 Real-time Core
 *   **Live Bidding**: Powered by **Laravel Reverb**. Watch updates happen instantly.
-*   **Smart Notifications**: Real-time "Outbid" alerts and status synchronization.
+*   **Smart Notifications**: Real-time "Outbid" alerts, auto-bid max reached warnings, and watchlist reminders.
 *   **Instant Messaging**: Integrated chat system for every auction thread.
 *   **User Profiles**: Comprehensive user dashboard with activity tracking, wins, and bidding history.
 *   **Seller Tools**: Automated notifications and contact handling for ended auctions.
+*   **Notification Center**: Bell icon with unread badge, dropdown previews, and full inbox with pagination.
 
 ### 💎 User Experience
 *   **3-Step Creation Flow**: Intuitive, frictionless auction builder.
@@ -58,6 +59,11 @@ sequenceDiagram
     Queue-->>Reverb: Broadcasts to Channel
     Reverb-->>Clients: Real-time UI Update
     Reverb-->>User: Success Confirmation
+    
+    Note over App,Queue: Outbid Event Triggered
+    Queue->>Queue: NotificationService
+    Queue-->>Reverb: NotificationCreated Event
+    Reverb-->>Clients: Bell Badge Updates
 ```
 
 ---
