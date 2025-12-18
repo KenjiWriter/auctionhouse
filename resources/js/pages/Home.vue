@@ -2,6 +2,8 @@
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, Link } from '@inertiajs/vue3';
 import { useI18n } from 'vue-i18n';
+import CountdownTimer from '@/components/Auction/CountdownTimer.vue';
+import { route } from 'ziggy-js';
 
 const { t } = useI18n();
 
@@ -47,9 +49,9 @@ defineProps<{
                                 <h3 class="truncate text-sm font-medium text-foreground group-hover:text-primary">
                                     {{ auction.title }}
                                 </h3>
-                                <div class="mt-1 flex items-center justify-between text-xs">
+                                <div class="mt-1 flex items-center justify-between text-[10px] sm:text-xs">
                                     <span class="font-semibold text-primary">${{ auction.current_bid }}</span>
-                                    <span class="text-muted-foreground">{{ new Date(auction.ends_at).toLocaleDateString() }}</span>
+                                    <CountdownTimer :date="auction.ends_at" />
                                 </div>
                             </div>
                         </Link>
