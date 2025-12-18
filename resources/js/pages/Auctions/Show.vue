@@ -4,6 +4,8 @@ import { Head, useForm, usePage, Link, router } from '@inertiajs/vue3';
 import { useI18n } from 'vue-i18n';
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import { route } from 'ziggy-js';
+import { useCountdown } from '@/composables/useCountdown';
+import { Mail } from 'lucide-vue-next';
 
 const { t } = useI18n();
 const page = usePage();
@@ -26,6 +28,11 @@ const props = defineProps<{
         images: Array<{ path: string }>;
         bids: Array<{ id: number; amount: number; user: { id: number; name: string }; user_id: number; created_at: string }>;
     };
+    userAutoBid?: {
+        id: number;
+        max_amount: number;
+        is_active: boolean;
+    } | null;
 }>();
 
 const mainImage = ref(props.auction.images[0]?.path || null);
@@ -42,6 +49,31 @@ const form = useForm({
 });
 
 const isOwner = computed(() => currentUser.value?.id === props.auction.user_id);
+
+const { formattedTime: startsIn, isExpired: isStarted } = useCountdown(props.auction.starts_at);
+const { formattedTime: endsIn, isExpired: isEnded } = useCountdown(props.auction.ends_at);
+
+const autoBidForm = useForm({
+    max_amount: props.userAutoBid?.max_amount || '',
+    is_active: props.userAutoBid?.is_active ?? false
+});
+
+const submitAutoBid = () => {
+    autoBidForm.post(route('auctions.autobid', props.auction.id), {
+        preserveScroll: true,
+        onSuccess: () => {
+            toastMessage.value = t('auction.auto_bid_updated');
+            showToast.value = true;
+        }
+    });
+};
+
+const contactSeller = () => {
+    router.post(route('conversations.store'), {
+        auction_id: props.auction.id,
+        receiver_id: props.auction.user_id
+    });
+};
 
 const userState = computed(() => {
     if (!currentUser.value) return 'guest';
@@ -211,10 +243,10 @@ onUnmounted(() => {
                             </p>
                         </div>
                         <div class="text-right">
-                            <p v-if="auction.status === 'upcoming' && auction.starts_at" class="text-sm text-muted-foreground">Starts In</p>
+                            <p v-if="auction.status === 'upcoming' && !isStarted" class="text-sm text-muted-foreground">Starts In</p>
                             <p v-else class="text-sm text-muted-foreground">Ends In</p>
-                            <p v-if="auction.status === 'upcoming' && auction.starts_at" class="text-xl font-bold">{{ new Date(auction.starts_at).toLocaleString() }}</p> 
-                            <p v-else class="text-xl font-bold">{{ new Date(auction.ends_at).toLocaleString() }}</p> 
+                            <p v-if="auction.status === 'upcoming' && !isStarted" class="text-xl font-bold">{{ startsIn }}</p> 
+                            <p v-else class="text-xl font-bold text-red-600 dark:text-red-400">{{ endsIn }}</p> 
                         </div>
                     </div>
 
@@ -253,12 +285,66 @@ onUnmounted(() => {
                                  Bid
                             </button>
                          </form>
-                         <div v-if="form.errors.amount" class="text-red-500 text-sm">{{ form.errors.amount }}</div>
+                          <div v-if="form.errors.amount" class="text-red-500 text-sm">{{ form.errors.amount }}</div>
+
+                         <!-- Auto Bid Section -->
+                         <div v-if="userState !== 'owner' && userState !== 'guest' && auction.status === 'active'" class="mt-6 pt-6 border-t">
+                            <h4 class="text-sm font-bold mb-3 flex items-center gap-2">
+                                <span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+                                {{ t('auction.autoBid') }}
+                            </h4>
+                            <form @submit.prevent="submitAutoBid" class="space-y-3">
+                                <div class="flex gap-2">
+                                    <div class="relative flex-1">
+                                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                                        <input 
+                                            v-model="autoBidForm.max_amount" 
+                                            type="number" 
+                                            step="0.01" 
+                                            class="w-full pl-7 rounded-md border-border bg-background text-sm" 
+                                            :placeholder="t('auction.autoBidMax')"
+                                            required
+                                        />
+                                    </div>
+                                    <button 
+                                        type="submit" 
+                                        :disabled="autoBidForm.processing"
+                                        class="px-4 py-2 border border-primary text-primary rounded-md text-sm font-medium hover:bg-primary/5 transition-colors"
+                                    >
+                                        {{ props.userAutoBid ? t('common.update') : t('common.set') }}
+                                    </button>
+                                </div>
+                                <label class="flex items-center gap-2 cursor-pointer group">
+                                    <div class="relative inline-flex items-center">
+                                        <input 
+                                            type="checkbox" 
+                                            v-model="autoBidForm.is_active" 
+                                            class="sr-only peer"
+                                            @change="submitAutoBid"
+                                        />
+                                        <div class="w-9 h-5 bg-muted rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
+                                    </div>
+                                    <span class="text-xs text-muted-foreground group-hover:text-foreground transition-colors">
+                                        {{ autoBidForm.is_active ? t('auction.autoBidEnabled') : t('auction.autoBidDisabled') }}
+                                    </span>
+                                </label>
+                            </form>
+                         </div>
                     </div>
                 </div>
 
                 <div class="prose dark:prose-invert">
-                    <h3 class="text-lg font-medium">Description</h3>
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="text-lg font-medium m-0">Description</h3>
+                        <button 
+                            v-if="!isOwner && currentUser" 
+                            @click="contactSeller"
+                            class="flex items-center gap-2 text-sm text-primary hover:underline font-medium"
+                        >
+                            <Mail class="w-4 h-4" />
+                            {{ t('chat.writeToSeller') }}
+                        </button>
+                    </div>
                     <p>{{ auction.description }}</p>
                 </div>
             </div>

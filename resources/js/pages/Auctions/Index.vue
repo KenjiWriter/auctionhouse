@@ -6,6 +6,7 @@ import { ref, watch, computed } from 'vue';
 import debounce from 'lodash/debounce';
 import { route } from 'ziggy-js';
 import { AppPageProps } from '@/types';
+import CountdownTimer from '@/components/Auction/CountdownTimer.vue';
 
 const { t } = useI18n();
 const page = usePage<AppPageProps>();
@@ -24,6 +25,7 @@ const props = defineProps<{
             starts_at: string | null;
             status: string;
             is_watched?: boolean;
+            images: Array<{ path: string }>;
         }>;
     };
     filters?: {
@@ -118,9 +120,14 @@ watch([search, category, minPrice, maxPrice, buyNow, status], debounce(() => {
 
         <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             <div v-for="auction in auctions.data" :key="auction.id" class="bg-card border rounded-lg shadow-sm overflow-hidden">
-                <div class="h-48 bg-muted flex items-center justify-center text-muted-foreground">
-                    <!-- Image placeholder -->
-                    <span class="text-4xl font-bold opacity-20">IMAGE</span>
+                <div class="h-48 bg-muted flex items-center justify-center text-muted-foreground overflow-hidden">
+                    <img 
+                        v-if="auction.images?.[0]" 
+                        :src="`/storage/${auction.images[0].path}`" 
+                        :alt="auction.title"
+                        class="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
+                    />
+                    <span v-else class="text-4xl font-bold opacity-20">IMAGE</span>
                 </div>
                 <div class="p-4">
                     <div class="flex justify-between items-start mb-2">
@@ -158,8 +165,10 @@ watch([search, category, minPrice, maxPrice, buyNow, status], debounce(() => {
                                  <p v-if="auction.status === 'upcoming' && auction.starts_at" class="text-xs text-muted-foreground">Starts</p>
                                  <p v-else class="text-xs text-muted-foreground">Ends</p>
                                  
-                                 <p v-if="auction.status === 'upcoming' && auction.starts_at" class="text-sm font-medium">{{ new Date(auction.starts_at).toLocaleString() }}</p>
-                                 <p v-else class="text-sm font-medium">{{ new Date(auction.ends_at).toLocaleString() }}</p>
+                                 <CountdownTimer 
+                                    :date="auction.status === 'upcoming' ? auction.starts_at : auction.ends_at" 
+                                    class="text-sm font-medium"
+                                 />
                              </div>
                              <Link 
                                 v-if="currentUser && currentUser.id === auction.user.id && ['ended', 'ended_without_sale'].includes(auction.status)"

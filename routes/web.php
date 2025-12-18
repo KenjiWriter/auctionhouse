@@ -44,6 +44,7 @@ Route::middleware('auth')->group(function () {
     Route::get('auctions/{auction}/relist', [\App\Http\Controllers\AuctionsController::class, 'relist'])->name('auctions.relist');
     Route::resource('auctions', \App\Http\Controllers\AuctionsController::class);
     Route::post('auctions/{auction}/bid', [\App\Http\Controllers\AuctionsController::class, 'bid'])->name('auctions.bid');
+    Route::post('auctions/{auction}/autobid', [\App\Http\Controllers\AuctionsController::class, 'setAutoBid'])->name('auctions.autobid');
     
     // Chat
     Route::get('conversations', [\App\Http\Controllers\ConversationController::class, 'index'])->name('conversations.index');

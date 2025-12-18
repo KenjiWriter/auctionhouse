@@ -52,71 +52,10 @@ class AuctionsController extends Controller
         return redirect()->route('auctions.index')->with('success', 'Auction created successfully.');
     }
 
-    public function bid(Request $request, int $auctionId)
+    public function bid(Request $request, int $auctionId, \App\Services\BiddingService $biddingService)
     {
-        $user = $request->user();
-        
-        // 1. Transaction & Lock
         try {
-            \Illuminate\Support\Facades\DB::transaction(function () use ($request, $auctionId, $user) {
-                // Lock the auction row for update to prevent race conditions
-                $auction = Auction::lockForUpdate()->findOrFail($auctionId);
-
-                // 2. Validate Auction Status
-                if ($auction->status !== Auction::STATUS_ACTIVE) {
-                    throw new \Exception(__('validation.auction_not_active'));
-                }
-
-                if ($auction->ends_at && $auction->ends_at->isPast()) {
-                     throw new \Exception(__('validation.auction_ended'));
-                }
-
-                // 3. Validate User (Owner Check)
-                if ($auction->user_id === $user->id) {
-                     throw new \Exception(__('validation.owner_cannot_bid'));
-                }
-
-                // 4. Validate Bid Amount
-                $minBid = ($auction->current_price ?: $auction->starting_price);
-                // Optional: enforce step. For now just > current. 
-                // However, strictly speaking, if current_price is set, new bid must be > current.
-                // If it's the FIRST bid, it must be >= starting_price.
-                // Let's refine:
-                // If bids exist, must be > current_price.
-                // If no bids, must be >= starting_price.
-                
-                $currentHighest = $auction->current_price;
-                $amount = $request->input('amount');
-
-                if ($currentHighest) {
-                    if ($amount <= $currentHighest) {
-                        throw new \Exception(__('validation.bid_too_low', ['min' => $currentHighest]));
-                    }
-                } else {
-                    if ($amount < $auction->starting_price) {
-                         throw new \Exception(__('validation.bid_too_low', ['min' => $auction->starting_price]));
-                    }
-                }
-
-                $previousHighestBid = $auction->bids()->first(); // Only works if ordered by desc in model relation
-
-                // 5. Place Bid
-                $bid = $auction->bids()->create([
-                    'user_id' => $user->id,
-                    'amount' => $amount,
-                ]);
-
-                // 6. Update Auction
-                $auction->update(['current_price' => $amount]);
-
-                // 7. Events
-                \App\Events\BidPlaced::dispatch($bid);
-
-                // Notify previous bidder
-                if ($previousHighestBid && $previousHighestBid->user_id !== $user->id) {
-                    \App\Events\Outbid::dispatch($auction->id, $previousHighestBid->user_id, $amount);
-                }
-            });
+            $biddingService->placeBid($auctionId, $request->user()->id, (float)$request->input('amount'));
         } catch (\Exception $e) {
             return back()->withErrors(['amount' => $e->getMessage()]);
         }
@@ -124,9 +63,36 @@ class AuctionsController extends Controller
         return back()->with('success', __('auction.bid_success'));
     }
 
+    public function setAutoBid(Request $request, int $auctionId)
+    {
+        $validated = $request->validate([
+            'max_amount' => 'required|numeric|min:0',
+            'is_active' => 'required|boolean',
+        ]);
+
+        $auction = Auction::findOrFail($auctionId);
+
+        if ($auction->user_id === $request->user()->id) {
+            return back()->withErrors(['auto_bid' => __('validation.owner_cannot_bid')]);
+        }
+
+        $autoBid = \App\Models\AutoBid::updateOrCreate(
+            ['auction_id' => $auctionId, 'user_id' => $request->user()->id],
+            ['max_amount' => $validated['max_amount'], 'is_active' => $validated['is_active']]
+        );
+
+        // If newly activated, try to resolve it immediately if the user is outbid
+        if ($autoBid->is_active) {
+            $service = app(\App\Services\BiddingService::class);
+            $service->resolveAutoBids($auction);
+        }
+
+        return back()->with('success', __('auction.auto_bid_updated'));
+    }
+
     public function index(Request $request)
     {
-        $auctions = Auction::with('category', 'user')
+        $auctions = Auction::with('category', 'user', 'images')
             ->withIsWatched()
             ->when($request->search, function ($query, $search) {
                 $query->where('title', 'like', "%{$search}%")
@@ -178,22 +144,28 @@ class AuctionsController extends Controller
     {
         $auction->load(['category', 'user', 'images', 'bids.user']);
         
+        $autoBid = null;
         // Load is_watched for single auction
-        if (request()->user()) {
-            $auction->loadExists(['watchers as is_watched' => function ($q) {
-                $q->where('user_id', request()->user()->id);
+        if ($user = request()->user()) {
+            $auction->loadExists(['watchers as is_watched' => function ($q) use ($user) {
+                $q->where('user_id', $user->id);
             }]);
+
+            $autoBid = \App\Models\AutoBid::where('auction_id', $auction->id)
+                ->where('user_id', $user->id)
+                ->first();
         }
 
         return Inertia::render('Auctions/Show', [
             'auction' => $auction,
+            'userAutoBid' => $autoBid,
         ]);
     }
 
     public function myAuctions(Request $request)
     {
         $auctions = $request->user()->auctions()
-            ->with('category', 'user')
+            ->with('category', 'user', 'images')
             ->withIsWatched()
             ->latest()
             ->paginate(10);
@@ -207,7 +179,7 @@ class AuctionsController extends Controller
     public function myWins(Request $request)
     {
         $auctions = Auction::where('winner_id', $request->user()->id)
-            ->with('category', 'user')
+            ->with('category', 'user', 'images')
             ->withIsWatched()
             ->latest()
             ->paginate(10);
@@ -255,7 +227,7 @@ class AuctionsController extends Controller
     public function watched(Request $request)
     {
         $auctions = $request->user()->watchedAuctions()
-            ->with(['category', 'user'])
+            ->with(['category', 'user', 'images'])
             ->withIsWatched() // Should be true for all, but consistent
             ->latest()
             ->paginate(10); // Or whatever pagination size
