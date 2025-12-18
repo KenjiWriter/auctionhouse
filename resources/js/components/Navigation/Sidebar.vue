@@ -2,22 +2,25 @@
 import { Link, usePage } from '@inertiajs/vue3';
 import { useI18n } from 'vue-i18n';
 import { computed } from 'vue';
-import { Home, PlusCircle, User, Bell, Search, Gavel, Package } from 'lucide-vue-next';
+import { Home, PlusCircle, User, Bell, Search, Gavel, Package, MessageSquare, Eye } from 'lucide-vue-next';
 import { route } from 'ziggy-js';
+import { AppPageProps } from '@/types';
 
 const { t, locale } = useI18n();
-const page = usePage();
-const user = computed(() => page.props.auth.user);
+const page = usePage<AppPageProps>();
+const user = computed(() => page.props.auth?.user);
+const unreadCount = computed(() => page.props.auth?.unread_messages_count || 0);
 
-const navigation = [
+const navigation = computed(() => [
     { name: 'nav.home', href: route('home'), icon: Home },
     { name: 'nav.search', href: route('auctions.index'), icon: Search },
+    { name: 'nav.watched', href: route('auctions.watched'), icon: Eye },
     { name: 'nav.add_auction', href: route('auctions.create'), icon: PlusCircle },
     { name: 'nav.my_auctions', href: route('auctions.mine'), icon: Package },
     { name: 'nav.my_wins', href: route('auctions.wins'), icon: Gavel },
+    { name: 'nav.chat', href: route('conversations.index'), icon: MessageSquare, badge: unreadCount.value },
     { name: 'nav.account', href: route('register.complete'), icon: User },
-    // Navigation links
-];
+]);
 
 const switchLanguage = (lang: string) => {
     locale.value = lang;
@@ -43,7 +46,10 @@ const switchLanguage = (lang: string) => {
                         :class="{ 'bg-sidebar-accent text-sidebar-accent-foreground': route().current(item.href) }"
                     >
                         <component :is="item.icon" class="h-4 w-4" />
-                        {{ t(item.name) }}
+                        <span>{{ t(item.name) }}</span>
+                        <span v-if="item.badge > 0" class="ml-auto bg-primary text-primary-foreground text-[10px] px-1.5 rounded-full py-0.5 font-bold">
+                            {{ item.badge }}
+                        </span>
                     </Link>
                 </li>
             </ul>

@@ -44,6 +44,12 @@ class HandleInertiaRequests extends Middleware
             'quote' => ['message' => trim($message), 'author' => trim($author)],
             'auth' => [
                 'user' => $request->user(),
+                'unread_messages_count' => $request->user() ? \App\Models\Message::where('user_id', '!=', $request->user()->id)
+                    ->whereNull('read_at')
+                    ->whereHas('conversation', function($q) use ($request) {
+                        $q->where('buyer_id', $request->user()->id)
+                          ->orWhere('seller_id', $request->user()->id);
+                    })->count() : 0,
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
         ];

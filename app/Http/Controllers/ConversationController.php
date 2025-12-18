@@ -43,12 +43,13 @@ class ConversationController extends Controller
         $conversations = Conversation::where('buyer_id', $user->id)
             ->orWhere('seller_id', $user->id)
             ->with(['auction', 'lastMessage', 'buyer', 'seller'])
+            ->withCount(['messages as unread_count' => function ($query) use ($user) {
+                $query->where('user_id', '!=', $user->id)
+                      ->whereNull('read_at');
+            }])
             ->latest('updated_at')
             ->get();
             
-        // Provide data for potential chat drawer or full page
-        // For MVP, maybe just a JSON API for the drawer or a dedicated page
-        // Let's do a dedicated page for "My Messages"
         return Inertia::render('Conversations/Index', [
             'conversations' => $conversations
         ]);
@@ -60,6 +61,12 @@ class ConversationController extends Controller
         if ($conversation->buyer_id !== $request->user()->id && $conversation->seller_id !== $request->user()->id) {
             abort(403);
         }
+
+        // Mark unread messages as read
+        $conversation->messages()
+            ->where('user_id', '!=', $request->user()->id)
+            ->whereNull('read_at')
+            ->update(['read_at' => now()]);
         
         $conversation->load(['messages.user', 'auction.category', 'buyer', 'seller']);
         

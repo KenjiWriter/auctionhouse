@@ -3,6 +3,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
 import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue';
 import { AppPageProps } from '@/types';
+import { route } from 'ziggy-js';
 
 const page = usePage<AppPageProps>();
 const currentUser = computed(() => page.props.auth.user);
@@ -60,13 +61,17 @@ onMounted(() => {
 
     // @ts-ignore
     window.Echo.private(`conversations.${props.conversation.id}`)
-        .listen('MessageSent', (e: any) => {
+        .listen('.message.sent', (e: any) => {
+            if (e.message.user_id !== currentUser.value.id) {
+                // Mark as read in background? or just trust that when we reload it works
+                // For better UX, we could trigger a "mark as read" endpoint
+            }
             messages.value.push({
                 id: e.message.id,
                 content: e.message.content,
                 user_id: e.message.user_id,
                 created_at: e.message.created_at,
-                user: e.message.user // Ensure this is loaded in Event
+                user: e.message.user
             });
             scrollToBottom();
         });

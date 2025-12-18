@@ -3,6 +3,7 @@ import type { LucideIcon } from 'lucide-vue-next';
 
 export interface Auth {
     user: User;
+    unread_messages_count?: number;
 }
 
 export interface BreadcrumbItem {
