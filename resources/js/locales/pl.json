@@ -109,5 +109,42 @@
         "city": "Miasto",
         "postal_code": "Kod pocztowy",
         "country": "Kraj"
+    },
+    "notifications": {
+        "title": "Powiadomienia",
+        "unread": "Nieprzeczytane",
+        "markAllRead": "Oznacz wszystkie jako przeczytane",
+        "empty": "Brak powiadomień",
+        "viewAll": "Zobacz wszystkie powiadomienia",
+        "types": {
+            "auction_outbid": {
+                "title": "Zostałeś przebity",
+                "body": "{auction_title}\nAktualna cena: ${current_price}"
+            },
+            "auction_autobid_max_reached": {
+                "title": "Osiągnięto limit auto-licytacji",
+                "body": "Aukcja przekroczyła Twój maksymalny limit ${max}"
+            },
+            "watch_auction_starting": {
+                "title": "Aukcja wkrótce się rozpocznie",
+                "body": "Rozpoczyna się za ${minutes} minut"
+            },
+            "watch_auction_ending": {
+                "title": "Aukcja wkrótce się kończy",
+                "body": "Kończy się za ${minutes} minut"
+            }
+        },
+        "currentPrice": "Aktualna cena",
+        "yourMax": "Twój max",
+        "viewAuction": "Zobacz aukcję",
+        "settings": {
+            "title": "Ustawienia powiadomień",
+            "watchlistReminders": "Przypomnienia obserwowanych",
+            "startingOffsets": "Powiadamiaj przed rozpoczęciem aukcji (minuty)",
+            "endingOffsets": "Powiadamiaj przed zakończeniem aukcji (minuty)",
+            "enableInApp": "Włącz powiadomienia w aplikacji",
+            "enableEmail": "Włącz powiadomienia email",
+            "saveSettings": "Zapisz ustawienia powiadomień"
+        }
     }
 }

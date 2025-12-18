@@ -22,6 +22,12 @@ interface UserProps {
 
 const props = defineProps<{
     user: UserProps;
+    notificationSettings: {
+        watch_start_offsets: number[];
+        watch_end_offsets: number[];
+        enable_in_app: boolean;
+        enable_email: boolean;
+    };
 }>();
 
 const form = useForm({
@@ -33,6 +39,13 @@ const form = useForm({
     country: props.user.country || '',
     avatar: null as File | null,
     avatar_preset: props.user.avatar_preset || (props.user.avatar_path ? null : 'default'),
+});
+
+const notificationForm = useForm({
+    watch_start_offsets: props.notificationSettings.watch_start_offsets || [60, 10],
+    watch_end_offsets: props.notificationSettings.watch_end_offsets || [30, 5],
+    enable_in_app: props.notificationSettings.enable_in_app ?? true,
+    enable_email: props.notificationSettings.enable_email ?? false,
 });
 
 // Better preset initialization logic
@@ -51,8 +64,12 @@ if (props.user.avatar_preset) {
 const submit = () => {
     form.post(route('profile.me.update'), {
          forceFormData: true,
-         preserveScroll: true,
+         onSuccess: () => form.reset('avatar'),
     });
+};
+
+const submitNotificationSettings = () => {
+    notificationForm.post(route('profile.notification-settings'));
 };
 </script>
 
@@ -192,6 +209,73 @@ const submit = () => {
                     </div>
 
                 </form>
+
+                <!-- Notification Settings -->
+                <div class="mt-8 pt-8 border-t">
+                    <h2 class="text-xl font-semibold mb-4">{{ t('notifications.settings.title') }}</h2>
+                    <form @submit.prevent="submitNotificationSettings" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-2">{{ t('notifications.settings.startingOffsets') }}</label>
+                            <div class="flex flex-wrap gap-2">
+                                <label v-for="offset in [5, 10, 30, 60, 120]" :key="'start-' + offset" class="flex items-center gap-2">
+                                    <input 
+                                        type="checkbox" 
+                                        :value="offset"
+                                        v-model="notificationForm.watch_start_offsets"
+                                        class="rounded border-gray-300"
+                                    />
+                                    <span class="text-sm">{{ offset }} min</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium mb-2">{{ t('notifications.settings.endingOffsets') }}</label>
+                            <div class="flex flex-wrap gap-2">
+                                <label v-for="offset in [5, 10, 30, 60]" :key="'end-' + offset" class="flex items-center gap-2">
+                                    <input 
+                                        type="checkbox" 
+                                        :value="offset"
+                                        v-model="notificationForm.watch_end_offsets"
+                                        class="rounded border-gray-300"
+                                    />
+                                    <span class="text-sm">{{ offset }} min</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="space-y-2">
+                            <label class="flex items-center gap-2">
+                                <input 
+                                    type="checkbox" 
+                                    v-model="notificationForm.enable_in_app"
+                                    class="rounded border-gray-300"
+                                />
+                                <span class="text-sm">{{ t('notifications.settings.enableInApp') }}</span>
+                            </label>
+                            <label class="flex items-center gap-2">
+                                <input 
+                                    type="checkbox" 
+                                    v-model="notificationForm.enable_email"
+                                    class="rounded border-gray-300"
+                                />
+                                <span class="text-sm">{{ t('notifications.settings.enableEmail') }}</span>
+                            </label>
+                        </div>
+
+                        <div class="flex items-center justify-end">
+                            <button
+                                type="submit"
+                                :disabled="notificationForm.processing"
+                                class="flex items-center gap-2 px-6 py-3 text-white bg-primary rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 font-bold shadow-lg transition-transform active:scale-95"
+                            >
+                                <Loader2 v-if="notificationForm.processing" class="animate-spin" :size="20" />
+                                <span v-if="notificationForm.processing">{{ t('profile.saving') }}</span>
+                                <span v-else>{{ t('notifications.settings.saveSettings') }}</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </AppLayout>

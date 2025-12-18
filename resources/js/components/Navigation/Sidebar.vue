@@ -5,6 +5,7 @@ import { ref, computed } from 'vue';
 import { Home, PlusCircle, User, Bell, Search, Gavel, Package, MessageSquare, Eye, ChevronDown } from 'lucide-vue-next';
 import { route } from 'ziggy-js';
 import { AppPageProps } from '@/types';
+import NotificationBell from '@/components/Notifications/NotificationBell.vue';
 
 const { t, locale } = useI18n();
 const page = usePage<AppPageProps>();
@@ -125,10 +126,11 @@ const switchLanguage = (lang: string) => {
                         {{ user.name.charAt(0) }}
                     </div>
                 </div>
-                <div class="flex flex-col">
+                <div class="flex flex-col flex-1">
                     <span class="text-sm font-medium">{{ user.name }}</span>
                     <span class="text-xs text-muted-foreground">{{ user.email }}</span>
                 </div>
+                <NotificationBell />
             </div>
              <div v-else class="flex flex-col gap-2">
                 <Link :href="route('login')" class="w-full text-center rounded-md bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90">

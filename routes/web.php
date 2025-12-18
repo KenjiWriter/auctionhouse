@@ -39,9 +39,17 @@ Route::middleware('auth')->group(function () {
     Route::get('profile', [ProfileController::class, 'show'])->name('profile.mine');
     Route::get('profile/edit', [ProfileController::class, 'edit'])->name('profile.me.edit');
     Route::post('profile/update', [ProfileController::class, 'update'])->name('profile.me.update');
+    Route::post('profile/notification-settings', [ProfileController::class, 'updateNotificationSettings'])->name('profile.notification-settings');
     Route::get('profile/bidding', [ProfileController::class, 'bidding'])->name('profile.bidding');
     Route::get('profile/wins', [ProfileController::class, 'wins'])->name('profile.wins');
     Route::get('profile/{user}', [ProfileController::class, 'show'])->name('profile.show');
+    
+    // Notifications
+    Route::get('notifications', [\App\Http\Controllers\NotificationController::class, 'index'])->name('notifications.index');
+    Route::get('api/notifications/unread-count', [\App\Http\Controllers\NotificationController::class, 'unreadCount'])->name('notifications.unread-count');
+    Route::get('api/notifications/latest', [\App\Http\Controllers\NotificationController::class, 'latest'])->name('notifications.latest');
+    Route::post('notifications/{id}/read', [\App\Http\Controllers\NotificationController::class, 'markAsRead'])->name('notifications.read');
+    Route::post('notifications/read-all', [\App\Http\Controllers\NotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
     
     // Seller notification
     Route::post('auctions/{auction}/notified', [\App\Http\Controllers\AuctionsController::class, 'markNotified'])->name('auctions.notified');

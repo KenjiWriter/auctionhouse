@@ -94,8 +94,19 @@ class ProfileController extends Controller
 
     public function edit(Request $request)
     {
+        $settings = \App\Models\UserNotificationSetting::firstOrCreate(
+            ['user_id' => $request->user()->id],
+            [
+                'watch_start_offsets' => \App\Models\UserNotificationSetting::DEFAULT_START_OFFSETS,
+                'watch_end_offsets' => \App\Models\UserNotificationSetting::DEFAULT_END_OFFSETS,
+                'enable_in_app' => true,
+                'enable_email' => false,
+            ]
+        );
+
         return Inertia::render('Profile/Edit', [
             'user' => $request->user(),
+            'notificationSettings' => $settings,
         ]);
     }
 
@@ -145,5 +156,24 @@ class ProfileController extends Controller
         }
         
         return redirect()->route('profile.mine');
+    }
+
+    public function updateNotificationSettings(Request $request)
+    {
+        $validated = $request->validate([
+            'watch_start_offsets' => 'nullable|array',
+            'watch_start_offsets.*' => 'integer|min:1',
+            'watch_end_offsets' => 'nullable|array',
+            'watch_end_offsets.*' => 'integer|min:1',
+            'enable_in_app' => 'boolean',
+            'enable_email' => 'boolean',
+        ]);
+
+        $settings = \App\Models\UserNotificationSetting::updateOrCreate(
+            ['user_id' => $request->user()->id],
+            $validated
+        );
+
+        return back()->with('success', 'Notification settings updated successfully.');
     }
 }

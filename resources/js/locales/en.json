@@ -16,7 +16,8 @@
         "chat": "Chat",
         "watched": "Watched",
         "profile": "Profile",
-        "bidding": "Bidding"
+        "bidding": "Bidding",
+        "notifications": "Notifications"
     },
     "home": {
         "forYou": {
@@ -109,5 +110,42 @@
         "city": "City",
         "postal_code": "Postal Code",
         "country": "Country"
+    },
+    "notifications": {
+        "title": "Notifications",
+        "unread": "Unread",
+        "markAllRead": "Mark all as read",
+        "empty": "No notifications yet",
+        "viewAll": "View all notifications",
+        "types": {
+            "auction_outbid": {
+                "title": "You've been outbid",
+                "body": "{auction_title}\nCurrent price: ${current_price}"
+            },
+            "auction_autobid_max_reached": {
+                "title": "Auto-bid limit reached",
+                "body": "Auction exceeded your max bid of ${max}"
+            },
+            "watch_auction_starting": {
+                "title": "Auction starting soon",
+                "body": "Starts in ${minutes} minutes"
+            },
+            "watch_auction_ending": {
+                "title": "Auction ending soon",
+                "body": "Ends in ${minutes} minutes"
+            }
+        },
+        "currentPrice": "Current Price",
+        "yourMax": "Your Max",
+        "viewAuction": "View Auction",
+        "settings": {
+            "title": "Notification Settings",
+            "watchlistReminders": "Watchlist Reminders",
+            "startingOffsets": "Notify before auction starts (minutes)",
+            "endingOffsets": "Notify before auction ends (minutes)",
+            "enableInApp": "Enable in-app notifications",
+            "enableEmail": "Enable email notifications",
+            "saveSettings": "Save Notification Settings"
+        }
     }
 }
