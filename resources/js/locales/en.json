@@ -49,6 +49,23 @@
         "ended": "Ended",
         "autoBid": "Auto-bid",
         "autoBidMax": "Max Bid Limit",
+        "autoBidActive": "You have an active auto-bid",
+        "yourAutoBid": "Your Auto-bid",
+        "postStatus": {
+            "none": "Active",
+            "awaitingContact": "Awaiting Seller Contact",
+            "awaitingPayment": "Awaiting Payment",
+            "completed": "Completed",
+            "disputed": "Disputed",
+            "cancelled": "Cancelled"
+        },
+        "actions": {
+            "contactWinner": "Contact Winner",
+            "markPaymentReceived": "Mark Payment Received",
+            "markCompleted": "Mark as Completed",
+            "openDispute": "Open Dispute",
+            "cancelAuction": "Cancel Auction"
+        },
         "autoBidEnabled": "Auto-bid active",
         "autoBidDisabled": "Auto-bid inactive",
         "autoBidUpdated": "Auto-bid settings updated",

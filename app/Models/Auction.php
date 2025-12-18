@@ -14,6 +14,14 @@ class Auction extends Model
     public const STATUS_ENDED_WITHOUT_SALE = 'ended_without_sale';
     public const STATUS_CANCELLED = 'cancelled';
 
+    // Post-Auction Status Constants
+    public const POST_STATUS_NONE = 'none';
+    public const POST_STATUS_AWAITING_CONTACT = 'awaiting_contact';
+    public const POST_STATUS_AWAITING_PAYMENT = 'awaiting_payment';
+    public const POST_STATUS_COMPLETED = 'completed';
+    public const POST_STATUS_DISPUTED = 'disputed';
+    public const POST_STATUS_CANCELLED = 'cancelled';
+
     protected $fillable = [
         'user_id',
         'category_id',
@@ -25,14 +33,27 @@ class Auction extends Model
         'starts_at',
         'ends_at',
         'status',
+        'post_status',
         'winner_id',
         'seller_notified_at',
+        'seller_contacted_at',
+        'buyer_confirmed_at',
+        'seller_confirmed_at',
+        'cancelled_at',
+        'cancel_reason',
+        'disputed_at',
+        'dispute_reason',
     ];
 
     protected $casts = [
         'starts_at' => 'datetime',
         'ends_at' => 'datetime',
         'seller_notified_at' => 'datetime',
+        'seller_contacted_at' => 'datetime',
+        'buyer_confirmed_at' => 'datetime',
+        'seller_confirmed_at' => 'datetime',
+        'cancelled_at' => 'datetime',
+        'disputed_at' => 'datetime',
         'starting_price' => 'decimal:2',
         'current_price' => 'decimal:2',
         'buy_now_price' => 'decimal:2',

@@ -47,7 +47,24 @@
         "relist": "Wystaw ponownie",
         "ended": "Zakończona",
         "autoBid": "Automatyczna oferta",
-        "autoBidMax": "Limit oferty",
+        "autoBidMax": "Limit Auto-licytacji",
+        "autoBidActive": "Masz aktywną auto-licytację",
+        "yourAutoBid": "Twoja Auto-licytacja",
+        "postStatus": {
+            "none": "Aktywna",
+            "awaitingContact": "Oczekiwanie na kontakt sprzedawcy",
+            "awaitingPayment": "Oczekiwanie na płatność",
+            "completed": "Zakończona",
+            "disputed": "Sporna",
+            "cancelled": "Anulowana"
+        },
+        "actions": {
+            "contactWinner": "Skontaktuj się ze zwycięzcą",
+            "markPaymentReceived": "Oznacz płatność jako otrzymaną",
+            "markCompleted": "Oznacz jako zakończoną",
+            "openDispute": "Otwórz spór",
+            "cancelAuction": "Anuluj aukcję"
+        },
         "autoBidEnabled": "Auto-oferta włączona",
         "autoBidDisabled": "Auto-oferta wyłączona",
         "autoBidUpdated": "Ustawienia auto-oferty zaktualizowane",

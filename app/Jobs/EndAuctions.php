@@ -34,10 +34,24 @@ class EndAuctions implements ShouldQueue
                 $auction->update([
                     'status' => \App\Models\Auction::STATUS_ENDED,
                     'winner_id' => $winningBid->user_id,
+                    'post_status' => \App\Models\Auction::POST_STATUS_AWAITING_CONTACT,
                 ]);
 
                 // Dispatch Event for Email Notification
                 \App\Events\AuctionEnded::dispatch($auction);
+
+                // Notify seller to contact winner
+                $seller = $auction->user;
+                $notificationService = app(\App\Services\NotificationService::class);
+                $notificationService->notify(
+                    $seller,
+                    'auction_won_action_required',
+                    $auction->id,
+                    [
+                        'auction_title' => $auction->title,
+                        'winner_name' => $winningBid->user->name,
+                    ]
+                );
             } else {
                 $auction->update([
                     'status' => \App\Models\Auction::STATUS_ENDED_WITHOUT_SALE,

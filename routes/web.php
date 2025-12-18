@@ -28,6 +28,13 @@ Route::middleware('auth')->group(function () {
     Route::post('auctions/{auction}/bid', [\App\Http\Controllers\AuctionsController::class, 'bid'])->name('auctions.bid');
     Route::post('auctions/{auction}/autobid', [\App\Http\Controllers\AuctionsController::class, 'setAutoBid'])->name('auctions.autobid');
     
+    // Auction Lifecycle (Post-Auction Actions)
+    Route::post('auctions/{auction}/contact-winner', [\App\Http\Controllers\AuctionLifecycleController::class, 'contactWinner'])->name('auctions.contactWinner');
+    Route::post('auctions/{auction}/payment-received', [\App\Http\Controllers\AuctionLifecycleController::class, 'markPaymentReceived'])->name('auctions.paymentReceived');
+    Route::post('auctions/{auction}/mark-completed', [\App\Http\Controllers\AuctionLifecycleController::class, 'markCompleted'])->name('auctions.markCompleted');
+    Route::post('auctions/{auction}/open-dispute', [\App\Http\Controllers\AuctionLifecycleController::class, 'openDispute'])->name('auctions.openDispute');
+    Route::post('auctions/{auction}/cancel', [\App\Http\Controllers\AuctionLifecycleController::class, 'cancelAuction'])->name('auctions.cancel');
+    
     // Chat
     Route::get('conversations', [\App\Http\Controllers\ConversationController::class, 'index'])->name('conversations.index');
     Route::post('conversations', [\App\Http\Controllers\ConversationController::class, 'store'])->name('conversations.store');
