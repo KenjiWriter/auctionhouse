@@ -5,6 +5,7 @@ use Inertia\Inertia;
 use Laravel\Fortify\Features;
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ProfileController;
 
 Route::get('/', function () {
     $auctions = \App\Models\Auction::with('images')
@@ -51,6 +52,15 @@ Route::middleware('auth')->group(function () {
     Route::post('conversations', [\App\Http\Controllers\ConversationController::class, 'store'])->name('conversations.store');
     Route::get('conversations/{conversation}', [\App\Http\Controllers\ConversationController::class, 'show'])->name('conversations.show');
     Route::post('conversations/{conversation}/messages', [\App\Http\Controllers\ConversationController::class, 'sendMessage'])->name('conversations.message');
+    
+    // Profile
+    Route::get('profile', [ProfileController::class, 'show'])->name('profile');
+    Route::get('profile/{user}', [ProfileController::class, 'show'])->name('profile.show');
+    Route::get('profile/bidding', [ProfileController::class, 'bidding'])->name('profile.bidding');
+    Route::get('profile/wins', [ProfileController::class, 'wins'])->name('profile.wins');
+    
+    // Seller notification
+    Route::post('auctions/{auction}/notified', [\App\Http\Controllers\AuctionsController::class, 'markNotified'])->name('auctions.notified');
 });
 
 Route::get('dashboard', function () {
